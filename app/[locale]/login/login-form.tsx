@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -136,6 +137,15 @@ export default function LoginForm({
             >
               {loading ? tc("loading") : t("submit")}
             </button>
+
+            {!isSchool && (
+              <p className="mt-4 text-center text-sm text-slate-500">
+                Pas encore d&apos;école ?{" "}
+                <Link href="/signup" className="text-indigo-600 hover:underline">
+                  Créer une école
+                </Link>
+              </p>
+            )}
           </form>
         )}
       </div>

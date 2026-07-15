@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { schoolSlugFromHost } from "@/lib/school-host";
 
-const PUBLIC_PATHS = ["/login", "/set-password"];
+const PUBLIC_PATHS = ["/login", "/signup", "/set-password"];
 
 function stripLocale(pathname: string) {
   return pathname.replace(/^\/(fr|ar|tzm|en)(?=\/|$)/, "") || "/";
