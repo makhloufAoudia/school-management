@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+service-account-google.json
+*.iam.gserviceaccount.json
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# Logs et fichiers temporaires
+*.log
+lib/_synctest.txt
+
+.fuse_hidden*
