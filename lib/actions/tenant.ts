@@ -49,3 +49,28 @@ export async function assertPlatformAccess(): Promise<{ ok: boolean }> {
   const { userId, isSuperAdmin } = await getSessionProfile();
   return { ok: Boolean(userId && isSuperAdmin) };
 }
+
+// Accès en mode "domaine unique" (sans sous-domaine par école) : autorise tout
+// utilisateur ayant un profil valide. Le super-admin passe toujours ; un membre
+// d'école passe si son école est active. La RLS garantit ensuite que chacun ne
+// voit que les données de son école.
+export async function assertAnyAccess(): Promise<{
+  ok: boolean;
+  reason: "ok" | "not_authenticated" | "no_school" | "inactive";
+}> {
+  const { userId, schoolId, isSuperAdmin } = await getSessionProfile();
+  if (!userId) return { ok: false, reason: "not_authenticated" };
+  if (isSuperAdmin) return { ok: true, reason: "ok" };
+  if (!schoolId) return { ok: false, reason: "no_school" };
+
+  const admin = createAdminClient();
+  if (admin) {
+    const { data: school } = await admin
+      .from("schools")
+      .select("is_active")
+      .eq("id", schoolId)
+      .maybeSingle();
+    if (!school || !school.is_active) return { ok: false, reason: "inactive" };
+  }
+  return { ok: true, reason: "ok" };
+}

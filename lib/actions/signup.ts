@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ajouterSousDomaineEcole } from "@/lib/vercel-domain";
 
 // Inscription libre d'une école : un directeur crée son école et son compte
 // admin en une seule étape (aucun passage par Supabase). Chaque inscription
@@ -113,6 +114,16 @@ export async function signUpSchool(formData: FormData): Promise<{
       .from("profiles")
       .update({ full_name: fullName, role: "admin", school_id: schoolId as string })
       .eq("id", userId);
+  }
+
+  // 4) Déclaration du sous-domaine de l'école sur Vercel, pour qu'un
+  //    certificat lui soit délivré. Volontairement non bloquant : une
+  //    école créée reste créée même si cette étape échoue.
+  const domaine = await ajouterSousDomaineEcole(slug);
+  if (!domaine.ok) {
+    console.error(
+      `[signup] Sous-domaine ${domaine.domaine} non declare : ${domaine.message}`,
+    );
   }
 
   const loginUrl = await schoolLoginUrl(slug);
