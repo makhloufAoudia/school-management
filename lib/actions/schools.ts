@@ -40,16 +40,17 @@ async function getRequestHost(): Promise<{ host: string; proto: string }> {
   return { host, proto };
 }
 
-// Origine du sous-domaine d'une école : <proto>://<slug>.<apex>
-// (l'admin d'école se connecte et définit son mot de passe sur SON sous-domaine).
-function schoolOrigin(proto: string, host: string, slug: string): string {
+// Mode domaine unique : toutes les écoles partagent la même adresse.
+// Le paramètre slug est conservé pour ne pas toucher aux appels existants,
+// et pour pouvoir rebasculer facilement sur des sous-domaines si besoin.
+function schoolOrigin(proto: string, host: string, _slug: string): string {
   const root = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
   let apex = host;
   if (root) {
     const port = host.includes(":") ? ":" + host.split(":")[1] : "";
     apex = root + port;
   }
-  return `${proto}://${slug}.${apex}`;
+  return `${proto}://${apex}`;
 }
 
 // Slug : minuscules, chiffres et tirets (sert d'identifiant / sous-domaine).

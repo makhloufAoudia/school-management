@@ -90,10 +90,15 @@ export async function updateSession(
     return toLogin(false);
   }
 
-  // 2) Utilisateur connecté : SÉCURITÉ MAXIMALE — il doit être sur le BON
-  //    locataire. Apex => super-admin uniquement ; sous-domaine => membre de
-  //    l'école correspondante. Tout écart = redirection + purge de la session
-  //    locale (pas d'accès inter-écoles).
+  // 2) Utilisateur connecté : contrôle du locataire.
+  //    - Sur un sous-domaine d'école : seuls les membres de CETTE école
+  //      passent. Règle inchangée, au cas où vous réactiveriez les
+  //      sous-domaines plus tard.
+  //    - Sur le domaine racine (mode actuel) : tout profil rattaché à une
+  //      école passe, ainsi que le super-admin. L'isolation des données
+  //      repose alors sur la RLS Supabase et le school_id du profil, ce qui
+  //      était déjà le cas — le contrôle par l'hôte n'était qu'une couche
+  //      supplémentaire.
   if (user) {
     let resolved = false;
     let isSuper = false;
@@ -123,7 +128,9 @@ export async function updateSession(
     // On n'applique le blocage QUE si on a pu résoudre le profil (sinon on
     // évite de verrouiller à tort lors d'un incident base de données).
     if (resolved) {
-      const allowed = currentSlug ? ownSlug === currentSlug : isSuper;
+      const allowed = currentSlug
+        ? ownSlug === currentSlug
+        : Boolean(isSuper || ownSlug);
       if (!allowed && !isPublic) {
         return toLogin(true);
       }

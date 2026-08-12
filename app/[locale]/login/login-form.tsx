@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { assertSchoolMember, assertPlatformAccess } from "@/lib/actions/tenant";
+import { assertSchoolMember, assertAnyAccess } from "@/lib/actions/tenant";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
@@ -26,7 +26,7 @@ export default function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<
-    null | "creds" | "notMember" | "platformOnly"
+    null | "creds" | "notMember" | "platformOnly" | "schoolInactive"
   >(null);
   const [loading, setLoading] = useState(false);
 
@@ -57,12 +57,14 @@ export default function LoginForm({
         return;
       }
     } else {
-      // Espace plateforme (apex) : réservé au super-administrateur.
-      const res = await assertPlatformAccess();
+      // Domaine unique : tout compte valide entre par cette page. L'école
+      // est déduite du profil, pas de l'adresse. L'isolation des données
+      // reste assurée par la RLS Supabase et le school_id du profil.
+      const res = await assertAnyAccess();
       if (!res.ok) {
         await supabase.auth.signOut();
         setLoading(false);
-        setError("platformOnly");
+        setError(res.reason === "inactive" ? "schoolInactive" : "platformOnly");
         return;
       }
     }
@@ -128,6 +130,9 @@ export default function LoginForm({
             )}
             {error === "platformOnly" && (
               <p className="mb-3 text-sm text-red-600">{t("platformOnly")}</p>
+            )}
+            {error === "schoolInactive" && (
+              <p className="mb-3 text-sm text-red-600">{t("schoolInactive")}</p>
             )}
 
             <button

@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ajouterSousDomaineEcole } from "@/lib/vercel-domain";
 
 // Inscription libre d'une école : un directeur crée son école et son compte
 // admin en une seule étape (aucun passage par Supabase). Chaque inscription
@@ -39,15 +38,14 @@ async function uniqueSlug(admin: AdminClient, base: string): Promise<string> {
   return `${base}-${Date.now()}`;
 }
 
-// Construit l'URL de connexion sur le sous-domaine de l'école.
-async function schoolLoginUrl(slug: string): Promise<string | null> {
+// Construit l'URL de connexion. Mode domaine unique : tout le monde se
+// connecte sur la même adresse, l'école est déduite du compte.
+async function schoolLoginUrl(): Promise<string | null> {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
   const proto = h.get("x-forwarded-proto") ?? "https";
-  const root = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
-  if (!root) return null; // sans domaine racine configuré, pas de sous-domaine
-  const port = host.includes(":") ? ":" + host.split(":")[1] : "";
-  return `${proto}://${slug}.${root}${port}/fr/login`;
+  if (!host) return null;
+  return `${proto}://${host}/fr/login`;
 }
 
 export async function signUpSchool(formData: FormData): Promise<{
@@ -116,16 +114,9 @@ export async function signUpSchool(formData: FormData): Promise<{
       .eq("id", userId);
   }
 
-  // 4) Déclaration du sous-domaine de l'école sur Vercel, pour qu'un
-  //    certificat lui soit délivré. Volontairement non bloquant : une
-  //    école créée reste créée même si cette étape échoue.
-  const domaine = await ajouterSousDomaineEcole(slug);
-  if (!domaine.ok) {
-    console.error(
-      `[signup] Sous-domaine ${domaine.domaine} non declare : ${domaine.message}`,
-    );
-  }
-
-  const loginUrl = await schoolLoginUrl(slug);
+  // Mode domaine unique : plus rien à déclarer côté hébergeur.
+  // (lib/vercel-domain.ts reste disponible si vous réactivez un jour les
+  //  sous-domaines par école.)
+  const loginUrl = await schoolLoginUrl();
   return { error: null, slug, loginUrl };
 }
