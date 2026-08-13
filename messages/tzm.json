@@ -40,7 +40,9 @@
     "resetSubtitle": "Sekcem imayl-inek: ad tremseḍ aseɣwen i wakken ad tferneḍ awal uffir amaynut.",
     "resetSubmit": "Azen aseɣwen",
     "resetSent": "Ma yella umiḍan i tansa-a, yettwazen-d yiwen imayl tura. Ldi aseɣwen i yellan deg-s i wakken ad tferneḍ awal uffir amaynut. Wali daɣen deg ubrid n yiznan ur nelli d ilelliyen.",
-    "backToLogin": "Uɣal ɣer tuqqna"
+    "backToLogin": "Uɣal ɣer tuqqna",
+    "resetTooMany": "Aṭas n yisuturen deg kra n wakud. Ṛǧu kra n tesdatin send ad tɛerḍeḍ tikkelt-nniḍen.",
+    "resetFailed": "Tuzzna ur teddi ara. Ɛreḍ tikkelt-nniḍen ticki."
   },
   "dashboard": {
     "welcome": "Ansuf",

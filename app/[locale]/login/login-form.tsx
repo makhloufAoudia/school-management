@@ -52,6 +52,7 @@ export default function LoginForm({
   // Même protection que sur le formulaire de connexion : le champ s'ouvre en
   // lecture seule pour que le navigateur ne le pré-remplisse pas.
   const [resetLocked, setResetLocked] = useState(true);
+  const [resetError, setResetError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<
@@ -175,12 +176,26 @@ export default function LoginForm({
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setResetError(null);
     setResetBusy(true);
     const supabase = makeResetClient();
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/${locale}/set-password`,
-    });
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(
+      email,
+      { redirectTo: `${window.location.origin}/${locale}/set-password` },
+    );
     setResetBusy(false);
+
+    // On ne révèle jamais si l'adresse existe. En revanche, une limite
+    // d'envoi ou une panne du service doit être dite : sinon l'utilisateur
+    // attend un e-mail qui n'arrivera jamais.
+    if (resetErr) {
+      const m = resetErr.message ?? "";
+      const throttled =
+        resetErr.status === 429 || /rate limit|seconds|too many/i.test(m);
+      setResetError(throttled ? t("resetTooMany") : t("resetFailed"));
+      return;
+    }
+
     setResetSent(true);
   }
 
@@ -238,6 +253,11 @@ export default function LoginForm({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+
+                {resetError && (
+                  <p className="mt-3 text-sm text-red-600">{resetError}</p>
+                )}
+
                 <button
                   type="submit"
                   disabled={resetBusy}

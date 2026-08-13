@@ -40,7 +40,9 @@
     "resetSubtitle": "Indiquez votre adresse e-mail : vous recevrez un lien pour choisir un nouveau mot de passe.",
     "resetSubmit": "Envoyer le lien",
     "resetSent": "Si un compte existe pour cette adresse, un e-mail vient d'être envoyé. Ouvrez le lien qu'il contient pour choisir un nouveau mot de passe. Pensez à regarder dans les indésirables.",
-    "backToLogin": "Retour à la connexion"
+    "backToLogin": "Retour à la connexion",
+    "resetTooMany": "Trop de demandes en peu de temps. Patientez quelques minutes avant de réessayer.",
+    "resetFailed": "L'envoi a échoué. Réessayez dans un instant."
   },
   "dashboard": {
     "welcome": "Bienvenue",

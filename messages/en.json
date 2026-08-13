@@ -40,7 +40,9 @@
     "resetSubtitle": "Enter your email address: you will receive a link to choose a new password.",
     "resetSubmit": "Send the link",
     "resetSent": "If an account exists for this address, an email has just been sent. Open the link it contains to choose a new password. Remember to check your spam folder.",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "resetTooMany": "Too many requests in a short time. Please wait a few minutes before trying again.",
+    "resetFailed": "Sending failed. Please try again in a moment."
   },
   "dashboard": {
     "welcome": "Welcome",
