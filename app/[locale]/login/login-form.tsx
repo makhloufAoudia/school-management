@@ -49,6 +49,9 @@ export default function LoginForm({
   const [mode, setMode] = useState<"login" | "reset">("login");
   const [resetSent, setResetSent] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  // Même protection que sur le formulaire de connexion : le champ s'ouvre en
+  // lecture seule pour que le navigateur ne le pré-remplisse pas.
+  const [resetLocked, setResetLocked] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<
@@ -220,14 +223,17 @@ export default function LoginForm({
                 </button>
               </>
             ) : (
-              <form onSubmit={handleReset}>
+              <form onSubmit={handleReset} autoComplete="off">
                 <p className="mb-4 text-sm text-slate-500">
                   {t("resetSubtitle")}
                 </p>
                 <FloatInput
                   label={t("email")}
                   type="email"
-                  name="email"
+                  name="reset_email"
+                  autoComplete="off"
+                  readOnly={resetLocked}
+                  onFocus={() => setResetLocked(false)}
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -316,6 +322,12 @@ export default function LoginForm({
                 onClick={() => {
                   setError(null);
                   setResetSent(false);
+                  setResetLocked(true);
+                  // On n'emporte l'adresse dans l'écran suivant QUE si
+                  // l'utilisateur a demandé qu'on la retienne. Sinon le champ
+                  // s'ouvre vide, comme partout ailleurs.
+                  if (!remember) setEmail("");
+                  setPassword("");
                   setMode("reset");
                 }}
                 className="text-sm text-indigo-600 hover:underline"
