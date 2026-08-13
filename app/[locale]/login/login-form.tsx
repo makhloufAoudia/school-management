@@ -12,22 +12,29 @@ import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
 import { GraduationCap } from "lucide-react";
 
-// Client dédié à la demande « mot de passe oublié ».
+// Client dédié au « mot de passe oublié ».
 //
-// Par défaut, Supabase utilise le flux PKCE : le lien reçu par e-mail
-// contient un `?code=` qui ne peut être échangé QUE par le navigateur ayant
-// fait la demande, via un secret stocké localement. Résultat : le lien ne
-// marche pas si on l'ouvre depuis le téléphone, une autre session, ou si le
-// stockage local a été vidé entre-temps.
+// On n'utilise PAS le lien cliquable envoyé par e-mail, mais le CODE à
+// 6 chiffres qui l'accompagne. Raison : les messageries (Gmail en tête)
+// visitent automatiquement les liens d'un message pour les analyser. Le
+// jeton de récupération étant à usage unique, il est consommé par ce robot
+// avant que la personne ne clique — d'où des liens systématiquement
+// « expirés ». Un code recopié à la main échappe à ce problème.
 //
-// En mode `implicit`, le lien contient directement les jetons : il
-// fonctionne depuis n'importe quel appareil. C'est le comportement attendu
-// d'un lien de récupération envoyé par e-mail.
+// persistSession: false → la vérification du code ne touche pas à la
+// session déjà ouverte dans ce navigateur (ex : le super-admin).
 function makeResetClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { detectSessionInUrl: false, flowType: "implicit" } },
+    {
+      auth: {
+        detectSessionInUrl: false,
+        flowType: "implicit",
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    },
   );
 }
 
@@ -45,10 +52,16 @@ export default function LoginForm({
   const locale = useLocale();
   const router = useRouter();
 
-  // "login" = connexion normale, "reset" = demande de nouveau mot de passe.
-  const [mode, setMode] = useState<"login" | "reset">("login");
+  // "login"  = connexion normale
+  // "reset"  = on demande l'adresse pour envoyer le code
+  // "code"   = on saisit le code reçu + le nouveau mot de passe
+  const [mode, setMode] = useState<"login" | "reset" | "code">("login");
   const [resetSent, setResetSent] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetDone, setResetDone] = useState(false);
   // Même protection que sur le formulaire de connexion : le champ s'ouvre en
   // lecture seule pour que le navigateur ne le pré-remplisse pas.
   const [resetLocked, setResetLocked] = useState(true);
@@ -196,7 +209,55 @@ export default function LoginForm({
       return;
     }
 
+    // L'e-mail contient un code à 6 chiffres : on passe à l'écran de saisie.
     setResetSent(true);
+    setOtp("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setMode("code");
+  }
+
+  // Vérifie le code reçu par e-mail, puis applique le nouveau mot de passe.
+  async function handleOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setResetError(null);
+
+    if (newPassword.length < 6) {
+      setResetError(t("passwordTooShort"));
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetError(t("passwordMismatch"));
+      return;
+    }
+
+    setResetBusy(true);
+    const supabase = makeResetClient();
+
+    // 1) Le code prouve que la personne a bien accès à cette boîte mail.
+    const { error: otpErr } = await supabase.auth.verifyOtp({
+      email,
+      token: otp.trim(),
+      type: "recovery",
+    });
+    if (otpErr) {
+      setResetBusy(false);
+      setResetError(t("codeInvalid"));
+      return;
+    }
+
+    // 2) Session temporaire en mémoire : on change le mot de passe.
+    const { error: updErr } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    setResetBusy(false);
+
+    if (updErr) {
+      setResetError(updErr.message);
+      return;
+    }
+
+    setResetDone(true);
   }
 
   return (
@@ -221,27 +282,10 @@ export default function LoginForm({
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h1 className="text-xl font-bold">{t("resetTitle")}</h1>
 
-            {resetSent ? (
-              <>
-                <p className="mb-4 mt-2 text-sm text-slate-600 dark:text-slate-300">
-                  {t("resetSent")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("login");
-                    setResetSent(false);
-                  }}
-                  className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                >
-                  {t("backToLogin")}
-                </button>
-              </>
-            ) : (
-              <form onSubmit={handleReset} autoComplete="off">
-                <p className="mb-4 text-sm text-slate-500">
-                  {t("resetSubtitle")}
-                </p>
+            <form onSubmit={handleReset} autoComplete="off">
+              <p className="mb-4 text-sm text-slate-500">
+                {t("resetSubtitle")}
+              </p>
                 <FloatInput
                   label={t("email")}
                   type="email"
@@ -271,6 +315,91 @@ export default function LoginForm({
                   className="mt-3 w-full text-center text-sm text-slate-500 hover:text-indigo-600 hover:underline"
                 >
                   {t("backToLogin")}
+                </button>
+            </form>
+          </div>
+        ) : mode === "code" ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h1 className="text-xl font-bold">{t("codeTitle")}</h1>
+
+            {resetDone ? (
+              <>
+                <p className="mb-4 mt-2 text-sm font-medium text-green-600">
+                  {t("passwordChanged")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("login");
+                    setResetDone(false);
+                    setResetSent(false);
+                    setPassword("");
+                    setResetError(null);
+                  }}
+                  className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                  {t("backToLogin")}
+                </button>
+              </>
+            ) : (
+              <form onSubmit={handleOtp} autoComplete="off">
+                <p className="mb-4 text-sm text-slate-500">
+                  {t("codeSubtitle", { email })}
+                </p>
+
+                <div className="space-y-3">
+                  <FloatInput
+                    label={t("codeLabel")}
+                    name="otp"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    dir="ltr"
+                    required
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                  <FloatInput
+                    label={t("newPassword")}
+                    type="password"
+                    name="new_password"
+                    autoComplete="new-password"
+                    minLength={6}
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <FloatInput
+                    label={t("confirmPassword")}
+                    type="password"
+                    name="confirm_password"
+                    autoComplete="new-password"
+                    minLength={6}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                </div>
+
+                {resetError && (
+                  <p className="mt-3 text-sm text-red-600">{resetError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={resetBusy}
+                  className="mt-4 w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {resetBusy ? tc("loading") : t("codeSubmit")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("reset");
+                    setResetError(null);
+                  }}
+                  className="mt-3 w-full text-center text-sm text-slate-500 hover:text-indigo-600 hover:underline"
+                >
+                  {t("codeResend")}
                 </button>
               </form>
             )}
