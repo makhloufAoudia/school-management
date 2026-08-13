@@ -5,6 +5,16 @@ import { headers } from "next/headers";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Un administrateur d'école, vu depuis l'espace plateforme.
+export type SchoolAdmin = {
+  id: string;
+  full_name: string;
+  email: string;
+  // true = compte suspendu (banni côté Supabase Auth) : il ne peut plus
+  // se connecter, mais ses données restent intactes.
+  is_blocked: boolean;
+};
+
 export type SchoolRow = {
   id: string;
   name: string;
@@ -17,6 +27,8 @@ export type SchoolRow = {
   admin_id: string | null;
   admin_name: string | null;
   admin_email: string | null;
+  // Tous les admins de l'école (le principal inclus).
+  admins: SchoolAdmin[];
 };
 
 // Garde : renvoie le client service_role UNIQUEMENT si l'appelant est
@@ -52,6 +64,10 @@ function schoolOrigin(proto: string, host: string, _slug: string): string {
   }
   return `${proto}://${apex}`;
 }
+
+// Durée de bannissement utilisée pour un blocage "jusqu'à nouvel ordre"
+// (100 ans). "none" lève le blocage.
+const BAN_FOREVER = "876000h";
 
 // Slug : minuscules, chiffres et tirets (sert d'identifiant / sous-domaine).
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -131,7 +147,7 @@ export async function listSchools(): Promise<{
     { data: usersList },
   ] = await Promise.all([
     admin.from("schools").select("id, name, slug, is_active, created_at").order("created_at"),
-    admin.from("profiles").select("id, full_name, school_id, role"),
+    admin.from("profiles").select("id, full_name, school_id, role, is_blocked"),
     admin.from("students").select("school_id"),
     admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ]);
@@ -145,12 +161,21 @@ export async function listSchools(): Promise<{
 
   const adminBySchool = new Map<string, number>();
   const primaryAdmin = new Map<string, { id: string; name: string }>();
+  const adminsBySchool = new Map<string, SchoolAdmin[]>();
   for (const p of profiles ?? []) {
     if (p.role === "admin" && p.school_id) {
       adminBySchool.set(p.school_id, (adminBySchool.get(p.school_id) ?? 0) + 1);
       if (!primaryAdmin.has(p.school_id)) {
         primaryAdmin.set(p.school_id, { id: p.id, name: p.full_name ?? "" });
       }
+      const list = adminsBySchool.get(p.school_id) ?? [];
+      list.push({
+        id: p.id,
+        full_name: p.full_name ?? "",
+        email: emailById.get(p.id) ?? "",
+        is_blocked: Boolean(p.is_blocked),
+      });
+      adminsBySchool.set(p.school_id, list);
     }
   }
   const studBySchool = new Map<string, number>();
@@ -171,6 +196,7 @@ export async function listSchools(): Promise<{
       admin_id: pa?.id ?? null,
       admin_name: pa?.name ?? null,
       admin_email: pa ? emailById.get(pa.id) ?? null : null,
+      admins: adminsBySchool.get(s.id) ?? [],
     };
   });
 
@@ -294,6 +320,77 @@ export async function updateSchoolAdmin(formData: FormData): Promise<{
     .update({ full_name })
     .eq("id", adminId);
   if (pErr) return { error: pErr.message };
+
+  revalidatePath("/[locale]/schools", "page");
+  return { error: null };
+}
+
+// Garde commune à setAdminBlocked / deleteSchoolAdmin : vérifie que la cible
+// est bien un admin d'école, qu'elle existe, et que ce n'est ni le super-admin
+// lui-même ni un autre compte protégé.
+async function assertTargetAdmin(
+  admin: AdminClient,
+  adminId: string,
+): Promise<{ ok: boolean; error: string | null }> {
+  const { userId } = await getSessionProfile();
+  if (adminId === userId) return { ok: false, error: "ERR_cannotTargetSelf" };
+
+  const { data: target } = await admin
+    .from("profiles")
+    .select("id, role, is_super_admin")
+    .eq("id", adminId)
+    .maybeSingle();
+
+  if (!target) return { ok: false, error: "ERR_adminRequired" };
+  if (target.is_super_admin) return { ok: false, error: "ERR_cannotTargetSuperAdmin" };
+  if (target.role !== "admin") return { ok: false, error: "ERR_notAnAdmin" };
+
+  return { ok: true, error: null };
+}
+
+// Bloque (ou débloque) un administrateur d'école : le compte ne peut plus se
+// connecter tant qu'il est bloqué, mais rien n'est supprimé. Réversible.
+export async function setAdminBlocked(
+  adminId: string,
+  blocked: boolean,
+): Promise<{ error: string | null }> {
+  const { admin, error } = await requireSuperAdmin();
+  if (!admin) return { error };
+
+  const guard = await assertTargetAdmin(admin, adminId);
+  if (!guard.ok) return { error: guard.error };
+
+  // 1) Empêche toute NOUVELLE connexion (Supabase Auth).
+  const { error: bErr } = await admin.auth.admin.updateUserById(adminId, {
+    ban_duration: blocked ? BAN_FOREVER : "none",
+  });
+  if (bErr) return { error: bErr.message };
+
+  // 2) Coupe la session EN COURS : le middleware lit ce champ à chaque
+  //    requête et renvoie le compte bloqué vers /login.
+  const { error: pErr } = await admin
+    .from("profiles")
+    .update({ is_blocked: blocked })
+    .eq("id", adminId);
+  if (pErr) return { error: pErr.message };
+
+  revalidatePath("/[locale]/schools", "page");
+  return { error: null };
+}
+
+// Supprime DÉFINITIVEMENT le compte d'un administrateur d'école.
+// L'école et ses données ne sont pas touchées : seul le compte disparaît.
+export async function deleteSchoolAdmin(
+  adminId: string,
+): Promise<{ error: string | null }> {
+  const { admin, error } = await requireSuperAdmin();
+  if (!admin) return { error };
+
+  const guard = await assertTargetAdmin(admin, adminId);
+  if (!guard.ok) return { error: guard.error };
+
+  const { error: dErr } = await admin.auth.admin.deleteUser(adminId);
+  if (dErr) return { error: dErr.message };
 
   revalidatePath("/[locale]/schools", "page");
   return { error: null };

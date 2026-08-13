@@ -44,7 +44,15 @@
     "setupNotice": "لم يتم إعداد Supabase بعد. انسخ .env.example إلى .env.local وأدخل مفاتيحك.",
     "parentChild": "ابني/ابنتي",
     "parentClass": "القسم",
-    "parentDue": "المبلغ المستحق"
+    "parentDue": "المبلغ المستحق",
+    "platformTitle": "نظرة عامة على المنصة",
+    "platformSchools": "المدارس",
+    "platformActiveSchools": "المدارس المفعّلة",
+    "platformAdmins": "المشرفون",
+    "platformBlockedAdmins": "المشرفون المحظورون",
+    "platformParents": "أولياء الأمور",
+    "platformYearRevenue": "مداخيل السنة",
+    "platformKeyHint": "لعرض إحصائيات المنصة، أضف المفتاح SUPABASE_SERVICE_ROLE_KEY في .env.local ثم أعد تشغيل الخادم."
   },
   "classes": {
     "add": "إضافة قسم",
@@ -291,6 +299,16 @@
     "ERR_emailInvalid": "عنوان بريد إلكتروني غير صالح.",
     "ERR_adminRequired": "المسؤول غير موجود.",
     "deleteSchool": "حذف المدرسة",
-    "deleteConfirm": "حذف هذه المدرسة نهائياً مع كل بياناتها وكل حساباتها؟ لا يمكن التراجع عن هذا الإجراء."
+    "deleteConfirm": "حذف هذه المدرسة نهائياً مع كل بياناتها وكل حساباتها؟ لا يمكن التراجع عن هذا الإجراء.",
+    "adminsSection": "المشرفون",
+    "adminsHint": "الحظر يوقف دخول الحساب (يمكن التراجع عنه). الحذف يمحو الحساب نهائياً؛ المدرسة وبياناتها تبقى كما هي.",
+    "blocked": "محظور",
+    "blockAdmin": "حظر هذا المشرف",
+    "unblockAdmin": "رفع الحظر عن هذا المشرف",
+    "deleteAdmin": "حذف هذا المشرف",
+    "deleteAdminConfirm": "حذف حساب {name} نهائياً؟ المدرسة وبياناتها لن تتأثر.",
+    "ERR_cannotTargetSelf": "لا يمكنك تطبيق هذا الإجراء على حسابك الخاص.",
+    "ERR_cannotTargetSuperAdmin": "لا يمكن حظر المشرف العام أو حذفه.",
+    "ERR_notAnAdmin": "هذا الحساب ليس مشرف مدرسة."
   }
 }

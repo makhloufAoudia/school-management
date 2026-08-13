@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { signUpSchool } from "@/lib/actions/signup";
 import LanguageSwitcher from "@/components/language-switcher";
@@ -27,6 +27,49 @@ export default function SignupForm() {
   const [done, setDone] = useState<{ slug: string; loginUrl: string | null } | null>(
     null
   );
+
+  const formRef = useRef<HTMLFormElement>(null);
+  // Vrai dès que l'utilisateur touche le formulaire : on ne l'efface plus.
+  const touched = useRef(false);
+
+  // ---- Anti pré-remplissage du navigateur -------------------------------
+  // Firefox et Chrome ignorent volontairement `autocomplete="off"` pour les
+  // identifiants enregistrés dans leur gestionnaire de mots de passe.
+  // Parade en deux couches :
+  //  1) les champs démarrent en lecture seule — un gestionnaire de mots de
+  //     passe ne remplit jamais un champ readonly. Le premier clic dans le
+  //     formulaire les débloque (voir onFocus sur le <form>) ;
+  //  2) le champ mot de passe n'est PAS un `type="password"` au chargement.
+  //     C'est la parade décisive : un gestionnaire de mots de passe ne
+  //     reconnaît un formulaire de connexion QUE s'il y trouve un champ de
+  //     type password. Sans lui, il ne remplit ni le mot de passe ni
+  //     l'e-mail associé. Le champ redevient un vrai `password` dès que
+  //     l'utilisateur clique dedans, avant même sa première frappe ;
+  //  3) filet de sécurité : on vide le formulaire à plusieurs instants après
+  //     l'affichage, au cas où le navigateur remplirait malgré tout.
+  const [locked, setLocked] = useState(true);
+  const [pwdReady, setPwdReady] = useState(false);
+
+  function unlock() {
+    touched.current = true;
+    setLocked(false);
+  }
+
+  useEffect(() => {
+    const clear = () => {
+      if (touched.current) return;
+      formRef.current?.reset();
+    };
+    const timers = [0, 60, 250, 600, 1200].map((d) => setTimeout(clear, d));
+    // Retour en arrière du navigateur (bfcache) : la page est restaurée
+    // telle quelle, avec ses champs remplis. On la nettoie aussi.
+    const onShow = () => clear();
+    window.addEventListener("pageshow", onShow);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("pageshow", onShow);
+    };
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -82,7 +125,15 @@ export default function SignupForm() {
           </div>
         ) : (
           <form
+            ref={formRef}
             onSubmit={handleSubmit}
+            // Premier clic / première frappe : l'utilisateur prend la main.
+            // On déverrouille les champs et on coupe le nettoyage auto.
+            onFocus={unlock}
+            onKeyDown={unlock}
+            // autoComplete="off" : le navigateur ne pré-remplit plus les
+            // champs (fond jaune) avec un compte enregistré précédemment.
+            autoComplete="off"
             className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
           >
             <h1 className="text-xl font-bold">Créer une école</h1>
@@ -91,13 +142,40 @@ export default function SignupForm() {
             </p>
 
             <div className="space-y-3">
-              <FloatInput label="Nom de l'école" name="school_name" required />
-              <FloatInput label="Ton nom complet" name="full_name" required />
-              <FloatInput label="Adresse e-mail" type="email" name="email" required />
+              <FloatInput
+                label="Nom de l'école"
+                name="school_name"
+                autoComplete="off"
+                readOnly={locked}
+                required
+              />
+              <FloatInput
+                label="Ton nom complet"
+                name="full_name"
+                autoComplete="off"
+                readOnly={locked}
+                required
+              />
+              <FloatInput
+                label="Adresse e-mail"
+                type="email"
+                name="email"
+                autoComplete="off"
+                readOnly={locked}
+                required
+              />
               <FloatInput
                 label="Mot de passe (8 caractères min.)"
-                type="password"
+                // Devient un vrai champ password au premier clic (voir le
+                // commentaire « Anti pré-remplissage » en haut du fichier).
+                type={pwdReady ? "password" : "text"}
                 name="password"
+                // "new-password" : indique au navigateur qu'il s'agit d'une
+                // création de compte, donc pas de mot de passe mémorisé.
+                autoComplete="new-password"
+                readOnly={locked}
+                onFocus={() => setPwdReady(true)}
+                onMouseEnter={() => setPwdReady(true)}
                 required
               />
             </div>
@@ -105,13 +183,22 @@ export default function SignupForm() {
 
             {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {loading ? "Création…" : "Créer mon école"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="reset"
+                onClick={() => setError(null)}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
+                Réinitialiser
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {loading ? "Création…" : "Créer mon école"}
+              </button>
+            </div>
 
             <p className="mt-4 text-center text-sm text-slate-500">
               Déjà un compte ?{" "}

@@ -44,7 +44,15 @@
     "setupNotice": "Supabase ur yettuseggem ara. Nɣel .env.example ɣer .env.local, tserseḍ tisura-inek.",
     "parentChild": "Mmi/Yelli",
     "parentClass": "Asmil",
-    "parentDue": "Ayen i d-yeqqimen ad yextelles"
+    "parentDue": "Ayen i d-yeqqimen ad yextelles",
+    "platformTitle": "Timeẓri n uḥanu",
+    "platformSchools": "Tiɣermiwin",
+    "platformActiveSchools": "Tiɣermiwin yermeḍ",
+    "platformAdmins": "Inedbalen",
+    "platformBlockedAdmins": "Inedbalen yettwasewḥlen",
+    "platformParents": "Imawlan",
+    "platformYearRevenue": "Idrimen n useggas",
+    "platformKeyHint": "Akken ad d-banent tsedditin n uḥanu, rnu tasarut SUPABASE_SERVICE_ROLE_KEY deg .env.local, sakin ales asenker n uqeddac."
   },
   "classes": {
     "add": "Rnu asmil",
@@ -291,6 +299,16 @@
     "ERR_emailInvalid": "Tansa n imayl d tarameɣtut.",
     "ERR_adminRequired": "Anebdad ulac-it.",
     "deleteSchool": "Kkes taɣiwant",
-    "deleteConfirm": "Kkes taɣiwant-a i lebda s yisefka-nnes akked yimiḍanen-nnes meṛṛa? Tigawt-a ur tettuɣal ara."
+    "deleteConfirm": "Kkes taɣiwant-a i lebda s yisefka-nnes akked yimiḍanen-nnes meṛṛa? Tigawt-a ur tettuɣal ara.",
+    "adminsSection": "Inedbalen",
+    "adminsHint": "Asewḥel yeḥbes anekcum n umiḍan (yezmer ad yettuɣal). Tukksa tekkes amiḍan i lebda; taɣiwant d yisefka-nnes qqimen akken llan.",
+    "blocked": "Yettwasewḥel",
+    "blockAdmin": "Sewḥel anedbal-a",
+    "unblockAdmin": "Kkes asewḥel i unedbal-a",
+    "deleteAdmin": "Kkes anedbal-a",
+    "deleteAdminConfirm": "Kkes i lebda amiḍan n {name}? Taɣiwant d yisefka-nnes ur ttwaḥazen ara.",
+    "ERR_cannotTargetSelf": "Ur tezmireḍ ara ad tegreḍ tigawt-a i umiḍan-ik.",
+    "ERR_cannotTargetSuperAdmin": "Anedbal ameqqran ur yezmir ad yettwasewḥel neɣ ad yettwakkes.",
+    "ERR_notAnAdmin": "Amiḍan-a mačči d anedbal n tɣiwant."
   }
 }

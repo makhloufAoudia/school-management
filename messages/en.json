@@ -44,7 +44,15 @@
     "setupNotice": "Supabase is not configured yet. Copy .env.example to .env.local and fill in your keys.",
     "parentChild": "My child",
     "parentClass": "Class",
-    "parentDue": "Amount due"
+    "parentDue": "Amount due",
+    "platformTitle": "Platform overview",
+    "platformSchools": "Schools",
+    "platformActiveSchools": "Active schools",
+    "platformAdmins": "Administrators",
+    "platformBlockedAdmins": "Blocked admins",
+    "platformParents": "Parents",
+    "platformYearRevenue": "This year's revenue",
+    "platformKeyHint": "To display platform statistics, add the SUPABASE_SERVICE_ROLE_KEY to .env.local, then restart the server."
   },
   "classes": {
     "add": "Add class",
@@ -291,6 +299,16 @@
     "ERR_emailInvalid": "Invalid email address.",
     "ERR_adminRequired": "Administrator not found.",
     "deleteSchool": "Delete school",
-    "deleteConfirm": "Permanently delete this school, all its data and all its accounts? This action cannot be undone."
+    "deleteConfirm": "Permanently delete this school, all its data and all its accounts? This action cannot be undone.",
+    "adminsSection": "Administrators",
+    "adminsHint": "Blocking suspends the account's access (reversible). Deleting removes the account permanently; the school and its data stay intact.",
+    "blocked": "Blocked",
+    "blockAdmin": "Block this admin",
+    "unblockAdmin": "Unblock this admin",
+    "deleteAdmin": "Delete this admin",
+    "deleteAdminConfirm": "Permanently delete {name}'s account? The school and its data are not affected.",
+    "ERR_cannotTargetSelf": "You cannot apply this action to your own account.",
+    "ERR_cannotTargetSuperAdmin": "The super administrator cannot be blocked or deleted.",
+    "ERR_notAnAdmin": "This account is not a school administrator."
   }
 }

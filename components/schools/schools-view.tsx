@@ -14,6 +14,8 @@ import {
   PowerOff,
   Mail,
   Trash2,
+  Ban,
+  ShieldCheck,
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput } from "@/components/ui/fields";
@@ -25,7 +27,10 @@ import {
   updateSchoolName,
   deleteSchool,
   setSchoolActive,
+  setAdminBlocked,
+  deleteSchoolAdmin,
   type SchoolRow,
+  type SchoolAdmin,
 } from "@/lib/actions/schools";
 
 export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
@@ -121,6 +126,38 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
       else {
         setDetailFor(null);
         setError(null);
+        router.refresh();
+      }
+    });
+  }
+
+  // Bloque / débloque un admin : réversible, aucune donnée n'est perdue.
+  function toggleAdminBlocked(a: SchoolAdmin) {
+    startTransition(async () => {
+      const res = await setAdminBlocked(a.id, !a.is_blocked);
+      if (res.error) setError(msg(res.error));
+      else {
+        setError(null);
+        setDetailFor(null);
+        router.refresh();
+      }
+    });
+  }
+
+  // Supprime définitivement le compte d'un admin (l'école reste intacte).
+  async function handleDeleteAdmin(a: SchoolAdmin) {
+    const ok = await confirmDelete(
+      t("deleteAdminConfirm", { name: a.full_name || a.email }),
+      tc("delete"),
+      tc("cancel"),
+    );
+    if (!ok) return;
+    startTransition(async () => {
+      const res = await deleteSchoolAdmin(a.id);
+      if (res.error) setError(msg(res.error));
+      else {
+        setError(null);
+        setDetailFor(null);
         router.refresh();
       }
     });
@@ -363,6 +400,70 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
               <p className="border-t border-slate-200 pt-4 text-sm text-slate-400 dark:border-slate-700">
                 {t("noAdmin")}
               </p>
+            )}
+
+            {/* Liste des admins de l'école : blocage / suppression */}
+            {detailFor.admins.length > 0 && (
+              <div className="space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700">
+                <div className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  {t("adminsSection")} ({detailFor.admins.length})
+                </div>
+                <p className="text-xs text-slate-400">{t("adminsHint")}</p>
+                <ul className="divide-y divide-slate-100 rounded-md border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+                  {detailFor.admins.map((a) => (
+                    <li
+                      key={a.id}
+                      className="flex items-center justify-between gap-2 px-3 py-2"
+                    >
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm">
+                          {a.full_name || "—"}
+                          {a.is_blocked && (
+                            <span className="ms-2 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600 dark:bg-red-950 dark:text-red-300">
+                              {t("blocked")}
+                            </span>
+                          )}
+                        </span>
+                        <span className="truncate text-xs text-slate-400" dir="ltr">
+                          {a.email}
+                        </span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => toggleAdminBlocked(a)}
+                          title={a.is_blocked ? t("unblockAdmin") : t("blockAdmin")}
+                          aria-label={
+                            a.is_blocked ? t("unblockAdmin") : t("blockAdmin")
+                          }
+                          className={`rounded-md p-2 transition-colors disabled:opacity-50 ${
+                            a.is_blocked
+                              ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                              : "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950"
+                          }`}
+                        >
+                          {a.is_blocked ? (
+                            <ShieldCheck className="h-4 w-4" />
+                          ) : (
+                            <Ban className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => handleDeleteAdmin(a)}
+                          title={t("deleteAdmin")}
+                          aria-label={t("deleteAdmin")}
+                          className="rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {error && <p className="text-sm text-red-600">{error}</p>}

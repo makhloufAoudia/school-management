@@ -44,7 +44,15 @@
     "setupNotice": "Supabase n'est pas encore configuré. Copiez .env.example vers .env.local et remplissez vos clés.",
     "parentChild": "Mon enfant",
     "parentClass": "Classe",
-    "parentDue": "Reste à payer"
+    "parentDue": "Reste à payer",
+    "platformTitle": "Vue plateforme",
+    "platformSchools": "Écoles",
+    "platformActiveSchools": "Écoles actives",
+    "platformAdmins": "Administrateurs",
+    "platformBlockedAdmins": "Admins bloqués",
+    "platformParents": "Parents",
+    "platformYearRevenue": "Revenus de l'année",
+    "platformKeyHint": "Pour afficher les statistiques de la plateforme, ajoutez la clé SUPABASE_SERVICE_ROLE_KEY dans .env.local, puis redémarrez le serveur."
   },
   "classes": {
     "add": "Ajouter une classe",
@@ -291,6 +299,16 @@
     "ERR_emailInvalid": "Adresse e-mail invalide.",
     "ERR_adminRequired": "Administrateur introuvable.",
     "deleteSchool": "Supprimer l'école",
-    "deleteConfirm": "Supprimer définitivement cette école, toutes ses données et tous ses comptes ? Cette action est irréversible."
+    "deleteConfirm": "Supprimer définitivement cette école, toutes ses données et tous ses comptes ? Cette action est irréversible.",
+    "adminsSection": "Administrateurs",
+    "adminsHint": "Bloquer suspend l'accès du compte (réversible). Supprimer efface le compte définitivement ; l'école et ses données restent intactes.",
+    "blocked": "Bloqué",
+    "blockAdmin": "Bloquer cet admin",
+    "unblockAdmin": "Débloquer cet admin",
+    "deleteAdmin": "Supprimer cet admin",
+    "deleteAdminConfirm": "Supprimer définitivement le compte de {name} ? L'école et ses données ne sont pas touchées.",
+    "ERR_cannotTargetSelf": "Vous ne pouvez pas appliquer cette action à votre propre compte.",
+    "ERR_cannotTargetSuperAdmin": "Le super-administrateur ne peut être ni bloqué ni supprimé.",
+    "ERR_notAnAdmin": "Ce compte n'est pas un administrateur d'école."
   }
 }

@@ -102,16 +102,18 @@ export async function updateSession(
   if (user) {
     let resolved = false;
     let isSuper = false;
+    let isBlocked = false;
     let ownSlug: string | null = null;
     try {
       const { data: prof, error: pErr } = await supabase
         .from("profiles")
-        .select("is_super_admin, school_id")
+        .select("is_super_admin, school_id, is_blocked")
         .eq("id", user.id)
         .single();
       if (!pErr && prof) {
         resolved = true;
         isSuper = Boolean(prof.is_super_admin);
+        isBlocked = Boolean(prof.is_blocked);
         if (prof.school_id) {
           const { data: sch } = await supabase
             .from("schools")
@@ -128,6 +130,11 @@ export async function updateSession(
     // On n'applique le blocage QUE si on a pu résoudre le profil (sinon on
     // évite de verrouiller à tort lors d'un incident base de données).
     if (resolved) {
+      // Compte bloqué par le super-admin : déconnexion immédiate, y compris
+      // si une session était déjà ouverte.
+      if (isBlocked) {
+        return toLogin(true);
+      }
       const allowed = currentSlug
         ? ownSlug === currentSlug
         : Boolean(isSuper || ownSlug);

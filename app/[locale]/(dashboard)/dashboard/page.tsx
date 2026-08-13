@@ -1,7 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/profile";
-import { Users, UserCog, School, CreditCard } from "lucide-react";
+import { getPlatformStats } from "@/lib/actions/platform";
+import {
+  Users,
+  UserCog,
+  School,
+  CreditCard,
+  Building2,
+  ShieldCheck,
+  Ban,
+  Wallet,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +41,50 @@ export default async function DashboardPage() {
     );
   }
 
-  const { supabase, role } = await getSessionProfile();
+  const { supabase, role, isSuperAdmin } = await getSessionProfile();
   let cards: Card[] = [];
 
-  if (role === "parent") {
+  if (isSuperAdmin) {
+    // ---- Tableau de bord PLATEFORME : toutes les écoles confondues ----
+    const { stats, error } = await getPlatformStats();
+
+    if (error === "missing_service_key") {
+      return (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+          {t("platformKeyHint")}
+        </div>
+      );
+    }
+
+    cards = [
+      { label: t("platformSchools"), value: stats.schools, icon: Building2 },
+      {
+        label: t("platformActiveSchools"),
+        value: `${stats.activeSchools} / ${stats.schools}`,
+        icon: ShieldCheck,
+      },
+      { label: t("platformAdmins"), value: stats.admins, icon: UserCog },
+      {
+        label: t("platformBlockedAdmins"),
+        value: stats.blockedAdmins,
+        icon: Ban,
+      },
+      { label: t("totalStudents"), value: stats.students, icon: Users },
+      { label: t("totalTeachers"), value: stats.teachers, icon: UserCog },
+      { label: t("totalClasses"), value: stats.classes, icon: School },
+      { label: t("platformParents"), value: stats.parents, icon: Users },
+      {
+        label: t("monthRevenue"),
+        value: stats.monthRevenue.toLocaleString(),
+        icon: CreditCard,
+      },
+      {
+        label: t("platformYearRevenue"),
+        value: stats.yearRevenue.toLocaleString(),
+        icon: Wallet,
+      },
+    ];
+  } else if (role === "parent") {
     // ---- Tableau de bord parent : enfant(s), classe, total dû restant ----
     const [{ data: children }, { data: classDues }, { data: payments }] =
       await Promise.all([
@@ -115,7 +165,9 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">{t("welcome")}</h1>
+      <h1 className="mb-6 text-2xl font-bold">
+        {isSuperAdmin ? t("platformTitle") : t("welcome")}
+      </h1>
       <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${gridCols}`}>
         {cards.map((card) => {
           const Icon = card.icon;
