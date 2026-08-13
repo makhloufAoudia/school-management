@@ -33,7 +33,8 @@
     "schoolSubtitle": "Connectez-vous à l'espace de votre école",
     "notMember": "Ce compte n'appartient pas à cette école.",
     "schoolInactive": "Cette école est désactivée. Contactez l'administrateur de la plateforme.",
-    "platformOnly": "Espace réservé au super-administrateur. Utilisez le lien de connexion de votre école."
+    "platformOnly": "Espace réservé au super-administrateur. Utilisez le lien de connexion de votre école.",
+    "remember": "Enregistrer mes informations"
   },
   "dashboard": {
     "welcome": "Bienvenue",

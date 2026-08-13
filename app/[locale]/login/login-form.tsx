@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -31,6 +31,67 @@ export default function LoginForm({
   const [loading, setLoading] = useState(false);
 
   const isSchool = Boolean(slug && schoolName && !schoolInactive);
+
+  // ---- « Enregistrer mes informations » ---------------------------------
+  // Case cochée  : l'e-mail est mémorisé sur cet appareil et pré-rempli, et
+  //                le navigateur est libre de compléter le mot de passe.
+  // Case décochée : le formulaire s'ouvre vide, et on empêche activement le
+  //                navigateur de le remplir (champs en lecture seule au
+  //                chargement + le mot de passe n'est pas un champ de type
+  //                `password` tant qu'on n'a pas cliqué dedans : sans lui,
+  //                aucun gestionnaire de mots de passe ne reconnaît le
+  //                formulaire).
+  const STORE_KEY = "school.login.email";
+  const [remember, setRemember] = useState(false);
+  // `hardened` : mode anti-remplissage. Actif tant que rien n'est mémorisé
+  // et que l'utilisateur n'a pas cliqué dans le formulaire.
+  const [hardened, setHardened] = useState(true);
+  const formRef = useRef<HTMLFormElement>(null);
+  const touched = useRef(false);
+
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = window.localStorage.getItem(STORE_KEY);
+    } catch {
+      /* stockage indisponible (navigation privée stricte) */
+    }
+
+    if (saved) {
+      // L'utilisateur a demandé qu'on retienne ses informations : on
+      // pré-remplit et on laisse le navigateur faire le reste.
+      setEmail(saved);
+      setRemember(true);
+      setHardened(false);
+      return;
+    }
+
+    // Rien de mémorisé : filet de sécurité, on repasse derrière le
+    // navigateur s'il remplit les champs malgré le mode anti-remplissage.
+    const clear = () => {
+      if (touched.current) return;
+      formRef.current?.reset();
+      setEmail("");
+      setPassword("");
+    };
+    const timers = [0, 60, 250, 600, 1200].map((d) => setTimeout(clear, d));
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  function unlock() {
+    touched.current = true;
+    setHardened(false);
+  }
+
+  // Mémorise (ou oublie) l'adresse selon la case, après une connexion réussie.
+  function persistEmail(value: string, keep: boolean) {
+    try {
+      if (keep) window.localStorage.setItem(STORE_KEY, value);
+      else window.localStorage.removeItem(STORE_KEY);
+    } catch {
+      /* stockage indisponible : on ignore, la connexion reste valable */
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,6 +130,9 @@ export default function LoginForm({
       }
     }
 
+    // Connexion réussie : on mémorise l'adresse si la case est cochée.
+    persistEmail(email, remember);
+
     setLoading(false);
     router.push("/dashboard");
     router.refresh();
@@ -94,7 +158,13 @@ export default function LoginForm({
           </div>
         ) : (
           <form
+            ref={formRef}
             onSubmit={handleSubmit}
+            // Premier clic / première frappe : l'utilisateur prend la main,
+            // on lève le mode anti-remplissage.
+            onFocus={unlock}
+            onKeyDown={unlock}
+            autoComplete={remember ? "on" : "off"}
             className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
           >
             <h1 className="text-xl font-bold">
@@ -108,18 +178,45 @@ export default function LoginForm({
               <FloatInput
                 label={t("email")}
                 type="email"
+                name="email"
+                autoComplete={remember ? "username" : "off"}
+                readOnly={hardened}
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <FloatInput
                 label={t("password")}
-                type="password"
+                // Devient un vrai champ password dès le premier clic : tant
+                // qu'il est en `text`, aucun gestionnaire de mots de passe ne
+                // reconnaît le formulaire et ne le remplit.
+                type={hardened ? "text" : "password"}
+                name="password"
+                autoComplete={remember ? "current-password" : "off"}
+                readOnly={hardened}
+                onMouseEnter={unlock}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
+            <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setRemember(on);
+                  if (on) unlock();
+                  // Décoché : on oublie tout de suite l'adresse mémorisée.
+                  if (!on) persistEmail("", false);
+                }}
+                className="h-4 w-4 cursor-pointer accent-indigo-600"
+              />
+              {t("remember")}
+            </label>
+
             <div className="mb-4" />
 
             {error === "creds" && (

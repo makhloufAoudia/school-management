@@ -33,7 +33,8 @@
     "schoolSubtitle": "Sign in to your school's space",
     "notMember": "This account does not belong to this school.",
     "schoolInactive": "This school is disabled. Please contact the platform administrator.",
-    "platformOnly": "Reserved for the platform super-admin. Please use your school's login link."
+    "platformOnly": "Reserved for the platform super-admin. Please use your school's login link.",
+    "remember": "Remember my details"
   },
   "dashboard": {
     "welcome": "Welcome",
