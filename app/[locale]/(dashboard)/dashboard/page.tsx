@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { getPlatformStats } from "@/lib/actions/platform";
@@ -11,6 +12,7 @@ import {
   ShieldCheck,
   Ban,
   Wallet,
+  ArrowRight,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +66,9 @@ type Card = {
   value: string | number;
   icon: typeof Users;
   accent: Accent;
+  // Page ouverte au clic. Absent = carte informative, non cliquable :
+  // on ne renvoie jamais vers un écran qui serait vide pour ce profil.
+  href?: string;
 };
 
 // Nombre de mois (inclus) entre le mois d'inscription et le mois courant.
@@ -111,24 +116,28 @@ export default async function DashboardPage() {
         value: stats.schools,
         icon: Building2,
         accent: "indigo",
+        href: "/schools",
       },
       {
         label: t("platformActiveSchools"),
         value: `${stats.activeSchools} / ${stats.schools}`,
         icon: ShieldCheck,
         accent: "emerald",
+        href: "/schools",
       },
       {
         label: t("platformAdmins"),
         value: stats.admins,
         icon: UserCog,
         accent: "sky",
+        href: "/schools",
       },
       {
         label: t("platformBlockedAdmins"),
         value: stats.blockedAdmins,
         icon: Ban,
         accent: "rose",
+        href: "/schools",
       },
       {
         label: t("totalStudents"),
@@ -216,18 +225,21 @@ export default async function DashboardPage() {
         value: kids.length,
         icon: Users,
         accent: "violet",
+        href: "/students",
       },
       {
         label: t("parentClass"),
         value: classes.size,
         icon: School,
         accent: "amber",
+        href: "/classes",
       },
       {
         label: t("parentDue"),
         value: due.toLocaleString(),
         icon: CreditCard,
         accent: "rose",
+        href: "/payments",
       },
     ];
   } else {
@@ -257,24 +269,28 @@ export default async function DashboardPage() {
         value: students.count ?? 0,
         icon: Users,
         accent: "violet",
+        href: "/students",
       },
       {
         label: t("totalTeachers"),
         value: teachers.count ?? 0,
         icon: UserCog,
         accent: "teal",
+        href: "/teachers",
       },
       {
         label: t("totalClasses"),
         value: classes.count ?? 0,
         icon: School,
         accent: "amber",
+        href: "/classes",
       },
       {
         label: t("monthRevenue"),
         value: revenue.toLocaleString(),
         icon: CreditCard,
         accent: "emerald",
+        href: "/payments",
       },
     ];
   }
@@ -290,11 +306,9 @@ export default async function DashboardPage() {
         {cards.map((card) => {
           const Icon = card.icon;
           const accent = ACCENTS[card.accent];
-          return (
-            <div
-              key={card.label}
-              className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"
-            >
+
+          const body = (
+            <>
               {/* Bande de couleur : identifie l'indicateur d'un coup d'œil */}
               <span
                 aria-hidden
@@ -315,6 +329,31 @@ export default async function DashboardPage() {
               <div className="mt-3 text-3xl font-bold tracking-tight">
                 {card.value}
               </div>
+
+              {card.href && (
+                <span className="mt-2 flex items-center gap-1 text-xs font-medium text-slate-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-slate-500">
+                  {t("openDetail")}
+                  <ArrowRight className="h-3 w-3" />
+                </span>
+              )}
+            </>
+          );
+
+          const base =
+            "group relative block overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-slate-800 dark:bg-slate-900";
+
+          // Carte cliquable : elle se soulève et signale la page ciblée.
+          return card.href ? (
+            <Link
+              key={card.label}
+              href={card.href}
+              className={`${base} cursor-pointer hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:hover:border-indigo-700`}
+            >
+              {body}
+            </Link>
+          ) : (
+            <div key={card.label} className={base}>
+              {body}
             </div>
           );
         })}

@@ -72,7 +72,8 @@
     "platformBlockedAdmins": "Inedbalen yettwasewḥlen",
     "platformParents": "Imawlan",
     "platformYearRevenue": "Idrimen n useggas",
-    "platformKeyHint": "Akken ad d-banent tsedditin n uḥanu, rnu tasarut SUPABASE_SERVICE_ROLE_KEY deg .env.local, sakin ales asenker n uqeddac."
+    "platformKeyHint": "Akken ad d-banent tsedditin n uḥanu, rnu tasarut SUPABASE_SERVICE_ROLE_KEY deg .env.local, sakin ales asenker n uqeddac.",
+    "openDetail": "Wali talqayt"
   },
   "classes": {
     "add": "Rnu asmil",

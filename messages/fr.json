@@ -72,7 +72,8 @@
     "platformBlockedAdmins": "Admins bloqués",
     "platformParents": "Parents",
     "platformYearRevenue": "Revenus de l'année",
-    "platformKeyHint": "Pour afficher les statistiques de la plateforme, ajoutez la clé SUPABASE_SERVICE_ROLE_KEY dans .env.local, puis redémarrez le serveur."
+    "platformKeyHint": "Pour afficher les statistiques de la plateforme, ajoutez la clé SUPABASE_SERVICE_ROLE_KEY dans .env.local, puis redémarrez le serveur.",
+    "openDetail": "Voir le détail"
   },
   "classes": {
     "add": "Ajouter une classe",

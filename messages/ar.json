@@ -72,7 +72,8 @@
     "platformBlockedAdmins": "المشرفون المحظورون",
     "platformParents": "أولياء الأمور",
     "platformYearRevenue": "مداخيل السنة",
-    "platformKeyHint": "لعرض إحصائيات المنصة، أضف المفتاح SUPABASE_SERVICE_ROLE_KEY في .env.local ثم أعد تشغيل الخادم."
+    "platformKeyHint": "لعرض إحصائيات المنصة، أضف المفتاح SUPABASE_SERVICE_ROLE_KEY في .env.local ثم أعد تشغيل الخادم.",
+    "openDetail": "عرض التفاصيل"
   },
   "classes": {
     "add": "إضافة قسم",

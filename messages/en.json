@@ -72,7 +72,8 @@
     "platformBlockedAdmins": "Blocked admins",
     "platformParents": "Parents",
     "platformYearRevenue": "This year's revenue",
-    "platformKeyHint": "To display platform statistics, add the SUPABASE_SERVICE_ROLE_KEY to .env.local, then restart the server."
+    "platformKeyHint": "To display platform statistics, add the SUPABASE_SERVICE_ROLE_KEY to .env.local, then restart the server.",
+    "openDetail": "View details"
   },
   "classes": {
     "add": "Add class",
