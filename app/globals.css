@@ -8,11 +8,69 @@
 }
 
 .dark {
-  --background: #0b1120;
+  /* Fond de page : bleu nuit, volontairement PLUS SOMBRE que les cartes
+     pour que celles-ci ressortent en relief. */
+  --background: #121a2b;
   --foreground: #f1f5f9;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ============================================================
+   THÈME SOMBRE — LISIBILITÉ
+   ------------------------------------------------------------
+   Les composants utilisent les nuances slate de Tailwind, très
+   sombres et trop proches les unes des autres : cartes, bordures
+   et texte secondaire se fondaient dans le fond.
+   On éclaircit ici ces nuances, en une seule fois, sans avoir à
+   modifier chaque composant.
+   Les sélecteurs reprennent le nom exact des classes générées
+   (`dark:bg-slate-900` → `.dark\:bg-slate-900`) et sont préfixés
+   par `.dark` pour passer devant la règle d'origine.
+   ============================================================ */
+
+/* Surfaces : cartes, panneaux, fenêtres */
+.dark .dark\:bg-slate-900 {
+  background-color: #1c2740;
+}
+.dark .dark\:bg-slate-800,
+.dark .dark\:hover\:bg-slate-800:hover {
+  background-color: #26344f;
+}
+
+/* Bordures : nettement visibles sans être agressives */
+.dark .dark\:border-slate-800,
+.dark .dark\:divide-slate-800 {
+  border-color: #33415c;
+}
+.dark .dark\:border-slate-700 {
+  border-color: #3d4d6b;
+}
+.dark .dark\:border-slate-600 {
+  border-color: #4a5c7d;
+}
+
+/* Texte secondaire : libellés, aides, valeurs grisées */
+.dark .dark\:text-slate-400 {
+  color: #b3c0d4;
+}
+.dark .dark\:text-slate-300 {
+  color: #d3dce8;
+}
+
+/* Champs de saisie : le fond doit se distinguer de la carte */
+.dark .dark\:bg-slate-900:where(input, select, textarea) {
+  background-color: #16203a;
+}
+
+/* Bleus : les nuances 500/600 sont pensées pour un fond clair et
+   deviennent ternes sur fond sombre. On monte d'un cran. */
+.dark .text-indigo-500 {
+  color: #a5b4fc;
+}
+.dark .text-indigo-600 {
+  color: #93a4fd;
 }
