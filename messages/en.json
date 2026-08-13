@@ -34,7 +34,13 @@
     "notMember": "This account does not belong to this school.",
     "schoolInactive": "This school is disabled. Please contact the platform administrator.",
     "platformOnly": "Reserved for the platform super-admin. Please use your school's login link.",
-    "remember": "Remember my details"
+    "remember": "Remember my details",
+    "forgot": "Forgot your password?",
+    "resetTitle": "Reset your password",
+    "resetSubtitle": "Enter your email address: you will receive a link to choose a new password.",
+    "resetSubmit": "Send the link",
+    "resetSent": "If an account exists for this address, an email has just been sent. Open the link it contains to choose a new password. Remember to check your spam folder.",
+    "backToLogin": "Back to sign in"
   },
   "dashboard": {
     "welcome": "Welcome",

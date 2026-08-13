@@ -34,7 +34,13 @@
     "notMember": "Ce compte n'appartient pas à cette école.",
     "schoolInactive": "Cette école est désactivée. Contactez l'administrateur de la plateforme.",
     "platformOnly": "Espace réservé au super-administrateur. Utilisez le lien de connexion de votre école.",
-    "remember": "Enregistrer mes informations"
+    "remember": "Enregistrer mes informations",
+    "forgot": "Mot de passe oublié ?",
+    "resetTitle": "Réinitialiser le mot de passe",
+    "resetSubtitle": "Indiquez votre adresse e-mail : vous recevrez un lien pour choisir un nouveau mot de passe.",
+    "resetSubmit": "Envoyer le lien",
+    "resetSent": "Si un compte existe pour cette adresse, un e-mail vient d'être envoyé. Ouvrez le lien qu'il contient pour choisir un nouveau mot de passe. Pensez à regarder dans les indésirables.",
+    "backToLogin": "Retour à la connexion"
   },
   "dashboard": {
     "welcome": "Bienvenue",

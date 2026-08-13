@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { assertSchoolMember, assertAnyAccess } from "@/lib/actions/tenant";
@@ -22,7 +22,13 @@ export default function LoginForm({
 }) {
   const t = useTranslations("login");
   const tc = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
+
+  // "login" = connexion normale, "reset" = demande de nouveau mot de passe.
+  const [mode, setMode] = useState<"login" | "reset">("login");
+  const [resetSent, setResetSent] = useState(false);
+  const [resetBusy, setResetBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<
@@ -138,6 +144,23 @@ export default function LoginForm({
     router.refresh();
   }
 
+  // Mot de passe oublié : Supabase envoie un e-mail contenant un lien de
+  // récupération qui ramène sur /set-password (cette page sait déjà traiter
+  // les jetons de type "recovery"). On affiche toujours le même message,
+  // que l'adresse existe ou non : révéler l'existence d'un compte
+  // permettrait d'énumérer les utilisateurs.
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setResetBusy(true);
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/${locale}/set-password`,
+    });
+    setResetBusy(false);
+    setResetSent(true);
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -155,6 +178,56 @@ export default function LoginForm({
         {schoolInactive ? (
           <div className="rounded-xl border border-amber-300 bg-amber-50 p-6 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
             {t("schoolInactive")}
+          </div>
+        ) : mode === "reset" ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h1 className="text-xl font-bold">{t("resetTitle")}</h1>
+
+            {resetSent ? (
+              <>
+                <p className="mb-4 mt-2 text-sm text-slate-600 dark:text-slate-300">
+                  {t("resetSent")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("login");
+                    setResetSent(false);
+                  }}
+                  className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                  {t("backToLogin")}
+                </button>
+              </>
+            ) : (
+              <form onSubmit={handleReset}>
+                <p className="mb-4 text-sm text-slate-500">
+                  {t("resetSubtitle")}
+                </p>
+                <FloatInput
+                  label={t("email")}
+                  type="email"
+                  name="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  disabled={resetBusy}
+                  className="mt-4 w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {resetBusy ? tc("loading") : t("resetSubmit")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("login")}
+                  className="mt-3 w-full text-center text-sm text-slate-500 hover:text-indigo-600 hover:underline"
+                >
+                  {t("backToLogin")}
+                </button>
+              </form>
+            )}
           </div>
         ) : (
           <form
@@ -216,6 +289,20 @@ export default function LoginForm({
               />
               {t("remember")}
             </label>
+
+            <div className="mt-2 text-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setResetSent(false);
+                  setMode("reset");
+                }}
+                className="text-sm text-indigo-600 hover:underline"
+              >
+                {t("forgot")}
+              </button>
+            </div>
 
             <div className="mb-4" />
 

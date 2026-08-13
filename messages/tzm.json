@@ -34,7 +34,13 @@
     "notMember": "Amiḍan-a ur yeɛlik ara ɣer taɣiwant-a.",
     "schoolInactive": "Taɣiwant-a tensa. Nermes anebdad n uɣawas.",
     "platformOnly": "Tallunt i unebdad ameqqran kan. Seqdec aseɣwen n tuqqna n taɣiwant-ik.",
-    "remember": "Ḥrez talɣut-inu"
+    "remember": "Ḥrez talɣut-inu",
+    "forgot": "Tettuḍ awal uffir?",
+    "resetTitle": "Ales awal uffir",
+    "resetSubtitle": "Sekcem imayl-inek: ad tremseḍ aseɣwen i wakken ad tferneḍ awal uffir amaynut.",
+    "resetSubmit": "Azen aseɣwen",
+    "resetSent": "Ma yella umiḍan i tansa-a, yettwazen-d yiwen imayl tura. Ldi aseɣwen i yellan deg-s i wakken ad tferneḍ awal uffir amaynut. Wali daɣen deg ubrid n yiznan ur nelli d ilelliyen.",
+    "backToLogin": "Uɣal ɣer tuqqna"
   },
   "dashboard": {
     "welcome": "Ansuf",
