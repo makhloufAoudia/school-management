@@ -5,11 +5,31 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { createBrowserClient } from "@supabase/ssr";
 import { assertSchoolMember, assertAnyAccess } from "@/lib/actions/tenant";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
 import { GraduationCap } from "lucide-react";
+
+// Client dédié à la demande « mot de passe oublié ».
+//
+// Par défaut, Supabase utilise le flux PKCE : le lien reçu par e-mail
+// contient un `?code=` qui ne peut être échangé QUE par le navigateur ayant
+// fait la demande, via un secret stocké localement. Résultat : le lien ne
+// marche pas si on l'ouvre depuis le téléphone, une autre session, ou si le
+// stockage local a été vidé entre-temps.
+//
+// En mode `implicit`, le lien contient directement les jetons : il
+// fonctionne depuis n'importe quel appareil. C'est le comportement attendu
+// d'un lien de récupération envoyé par e-mail.
+function makeResetClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { detectSessionInUrl: false, flowType: "implicit" } },
+  );
+}
 
 export default function LoginForm({
   slug = null,
@@ -153,7 +173,7 @@ export default function LoginForm({
     e.preventDefault();
     setError(null);
     setResetBusy(true);
-    const supabase = createClient();
+    const supabase = makeResetClient();
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/${locale}/set-password`,
     });

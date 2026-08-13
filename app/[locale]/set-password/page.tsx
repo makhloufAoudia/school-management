@@ -55,7 +55,31 @@ export default function SetPasswordPage() {
         // On repart TOUJOURS d'une session propre : sinon on agirait sur le
         // compte déjà connecté dans ce navigateur (ex : le super-admin), et
         // changer le mot de passe modifierait le mauvais compte.
+        //
+        // ATTENTION : signOut vide le stockage local, or les liens au format
+        // `?code=` (flux PKCE) ont justement besoin d'un secret qui y est
+        // rangé. On le met de côté et on le remet ensuite, sinon le lien est
+        // rejeté comme invalide.
+        const verifiers: [string, string][] = [];
+        try {
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const k = window.localStorage.key(i);
+            if (k && k.includes("code-verifier")) {
+              const v = window.localStorage.getItem(k);
+              if (v) verifiers.push([k, v]);
+            }
+          }
+        } catch {
+          /* stockage indisponible */
+        }
+
         await supabase.auth.signOut({ scope: "local" });
+
+        try {
+          for (const [k, v] of verifiers) window.localStorage.setItem(k, v);
+        } catch {
+          /* stockage indisponible */
+        }
 
         let ok = false;
         if (access_token && refresh_token) {
