@@ -104,6 +104,7 @@ create policy "teacher insert own request" on public.schedule_requests
   with check (
     current_role_is('teacher')
     and requested_by = auth.uid()
+    and school_id = current_school_id()
     and status = 'pending'
   );
 
