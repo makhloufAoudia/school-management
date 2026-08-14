@@ -27,11 +27,23 @@ export function toWhatsAppNumber(phone: string | null | undefined): string {
 
 // Lien « cliquer pour discuter » WhatsApp. Sans numéro exploitable, WhatsApp
 // s'ouvre quand même et laisse choisir le destinataire dans les contacts.
+//
+// target "web" : ouvre directement WhatsApp Web (par défaut, usage bureau).
+//   Évite la page intermédiaire de wa.me, qui tente d'abord de lancer
+//   l'application WhatsApp Desktop et affiche une erreur Windows si elle
+//   n'est pas installée.
+// target "app" : passe par wa.me, qui ouvre l'application (mobile/desktop).
 export function whatsAppLink(
   phone: string | null | undefined,
-  text: string
+  text: string,
+  target: "web" | "app" = "web"
 ): string {
   const num = toWhatsAppNumber(phone);
   const msg = encodeURIComponent(text);
-  return num ? `https://wa.me/${num}?text=${msg}` : `https://wa.me/?text=${msg}`;
+  if (target === "app") {
+    return num ? `https://wa.me/${num}?text=${msg}` : `https://wa.me/?text=${msg}`;
+  }
+  return num
+    ? `https://web.whatsapp.com/send?phone=${num}&text=${msg}`
+    : `https://web.whatsapp.com/send?text=${msg}`;
 }

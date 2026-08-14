@@ -141,8 +141,9 @@
     "ERR_account_exists": "Un compte est déjà rattaché à cette fiche.",
     "ERR_email_taken": "Cet e-mail est déjà utilisé par un autre compte.",
     "ERR_unknown": "Création impossible. Réessayez.",
-    "whatsapp": "Envoyer par WhatsApp",
-    "waMessage": "Bonjour {name}, voici votre accès à l'espace parent de Gestion Scolaire. Ouvrez ce lien pour choisir votre mot de passe : {link}"
+    "whatsapp": "Envoyer par WhatsApp Web",
+    "waMessage": "Bonjour {name}, voici votre accès à l'espace parent de Gestion Scolaire. Ouvrez ce lien pour choisir votre mot de passe : {link}",
+    "whatsappApp": "Ouvrir dans l'application WhatsApp"
   },
   "teachers": {
     "add": "Ajouter un enseignant",
@@ -186,8 +187,9 @@
     "ERR_account_exists": "Un compte est déjà rattaché à cette fiche.",
     "ERR_email_taken": "Cet e-mail est déjà utilisé par un autre compte.",
     "ERR_unknown": "Création impossible. Réessayez.",
-    "whatsapp": "Envoyer par WhatsApp",
-    "waMessage": "Bonjour {name}, voici votre accès à Gestion Scolaire. Ouvrez ce lien pour choisir votre mot de passe : {link}"
+    "whatsapp": "Envoyer par WhatsApp Web",
+    "waMessage": "Bonjour {name}, voici votre accès à Gestion Scolaire. Ouvrez ce lien pour choisir votre mot de passe : {link}",
+    "whatsappApp": "Ouvrir dans l'application WhatsApp"
   },
   "courses": {
     "add": "Ajouter un cours",

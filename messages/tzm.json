@@ -141,8 +141,9 @@
     "ERR_account_exists": "Yella yakan umiḍan yeqqnen ɣer takarḍa-a.",
     "ERR_email_taken": "Imayl-a yettwaseqdec yakan deg umiḍan nniḍen.",
     "ERR_unknown": "Ur yezmir ara ad yernu amiḍan. Ɛreḍ tikkelt nniḍen.",
-    "whatsapp": "Azen s WhatsApp",
-    "waMessage": "Azul {name}, atan useɣwen n unekcum ɣer tallunt n imawlan. Ldi-t akken ad tferneḍ awal-ik uffir: {link}"
+    "whatsapp": "Azen s WhatsApp Web",
+    "waMessage": "Azul {name}, atan useɣwen n unekcum ɣer tallunt n imawlan. Ldi-t akken ad tferneḍ awal-ik uffir: {link}",
+    "whatsappApp": "Ldi deg usnas WhatsApp"
   },
   "teachers": {
     "add": "Rnu aselmad",
@@ -186,8 +187,9 @@
     "ERR_account_exists": "Yella yakan umiḍan yeqqnen ɣer takarḍa-a.",
     "ERR_email_taken": "Imayl-a yettwaseqdec yakan deg umiḍan nniḍen.",
     "ERR_unknown": "Ur yezmir ara ad yernu amiḍan. Ɛreḍ tikkelt nniḍen.",
-    "whatsapp": "Azen s WhatsApp",
-    "waMessage": "Azul {name}, atan useɣwen n unekcum-ik ɣer Gestion Scolaire. Ldi-t akken ad tferneḍ awal-ik uffir: {link}"
+    "whatsapp": "Azen s WhatsApp Web",
+    "waMessage": "Azul {name}, atan useɣwen n unekcum-ik ɣer Gestion Scolaire. Ldi-t akken ad tferneḍ awal-ik uffir: {link}",
+    "whatsappApp": "Ldi deg usnas WhatsApp"
   },
   "courses": {
     "add": "Rnu tamsirt",

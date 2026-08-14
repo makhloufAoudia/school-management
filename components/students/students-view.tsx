@@ -527,6 +527,18 @@ export default function StudentsView({
                   <MessageCircle className="h-4 w-4" />
                   {t("whatsapp")}
                 </a>
+                <a
+                  href={whatsAppLink(
+                    shareTo.phone,
+                    t("waMessage", { name: shareTo.name, link: inviteLink }),
+                    "app"
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-center text-xs text-slate-500 hover:underline"
+                >
+                  {t("whatsappApp")}
+                </a>
               </>
             )}
             <div className="flex justify-end pt-2">

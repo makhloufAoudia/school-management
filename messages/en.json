@@ -141,8 +141,9 @@
     "ERR_account_exists": "An account is already linked to this record.",
     "ERR_email_taken": "This email is already used by another account.",
     "ERR_unknown": "Could not create the account. Please try again.",
-    "whatsapp": "Send via WhatsApp",
-    "waMessage": "Hello {name}, here is your access to the Gestion Scolaire parent area. Open this link to choose your password: {link}"
+    "whatsapp": "Send via WhatsApp Web",
+    "waMessage": "Hello {name}, here is your access to the Gestion Scolaire parent area. Open this link to choose your password: {link}",
+    "whatsappApp": "Open in the WhatsApp app"
   },
   "teachers": {
     "add": "Add teacher",
@@ -186,8 +187,9 @@
     "ERR_account_exists": "An account is already linked to this record.",
     "ERR_email_taken": "This email is already used by another account.",
     "ERR_unknown": "Could not create the account. Please try again.",
-    "whatsapp": "Send via WhatsApp",
-    "waMessage": "Hello {name}, here is your access to Gestion Scolaire. Open this link to choose your password: {link}"
+    "whatsapp": "Send via WhatsApp Web",
+    "waMessage": "Hello {name}, here is your access to Gestion Scolaire. Open this link to choose your password: {link}",
+    "whatsappApp": "Open in the WhatsApp app"
   },
   "courses": {
     "add": "Add course",
