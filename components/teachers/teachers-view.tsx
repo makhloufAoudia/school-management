@@ -3,13 +3,29 @@
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { Plus, Trash2, Search } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Search,
+  KeyRound,
+  Link2,
+  Copy,
+  Check,
+  Unlink,
+  MessageCircle,
+} from "lucide-react";
 import Modal from "@/components/modal";
+import { whatsAppLink } from "@/lib/format";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
 import { saveTeacher, deleteTeacher } from "@/lib/actions/teachers";
+import {
+  createTeacherAccount,
+  unlinkTeacherAccount,
+} from "@/lib/actions/accounts";
 
 export type TeacherRow = {
   id: string;
+  profile_id: string | null;
   first_name: string;
   last_name: string;
   phone: string | null;
@@ -36,6 +52,73 @@ export default function TeachersView({
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // Compte de connexion de l'enseignant
+  const [accountFor, setAccountFor] = useState<TeacherRow | null>(null);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [linkedExisting, setLinkedExisting] = useState(false);
+  const [copied, setCopied] = useState(false);
+  // Destinataire du lien, pour le bouton WhatsApp
+  const [shareTo, setShareTo] = useState<{ name: string; phone: string }>({
+    name: "",
+    phone: "",
+  });
+
+  // Les codes ERR_* sont traduits, les messages Supabase sont affichés tels quels.
+  function label(code: string) {
+    return code.startsWith("ERR_") ? t(code) : code;
+  }
+
+  function openAccount(x: TeacherRow) {
+    setShowForm(false);
+    setAccountError(null);
+    setAccountFor(x);
+  }
+
+  function handleAccount(formData: FormData) {
+    setShareTo({
+      name: String(formData.get("full_name") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+    });
+    startTransition(async () => {
+      const res = await createTeacherAccount(formData);
+      if (res.error) {
+        setAccountError(res.error);
+      } else {
+        setAccountFor(null);
+        setAccountError(null);
+        setCopied(false);
+        setLinkedExisting(res.linked);
+        setInviteLink(res.link ?? "");
+        router.refresh();
+      }
+    });
+  }
+
+  function handleUnlink(x: TeacherRow) {
+    if (!confirm(t("accountUnlinkConfirm"))) return;
+    startTransition(async () => {
+      const res = await unlinkTeacherAccount(x.id);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setShowForm(false);
+        router.refresh();
+      }
+    });
+  }
+
+  async function copyLink() {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -122,12 +205,13 @@ export default function TeachersView({
               <th className="px-4 py-3 text-start font-medium">{t("phone")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("baseSalary")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("status")}</th>
+              <th className="px-4 py-3 text-start font-medium">{t("account")}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
                   {t("empty")}
                 </td>
               </tr>
@@ -161,6 +245,18 @@ export default function TeachersView({
                   >
                     {x.is_active ? t("active") : t("inactive")}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {x.profile_id ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                      <KeyRound className="h-3 w-3" />
+                      {t("accountActive")}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">
+                      {t("accountNone")}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
@@ -237,7 +333,40 @@ export default function TeachersView({
               </FloatSelect>
             </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {editing && (
+              <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <KeyRound className="h-4 w-4 text-indigo-600" />
+                    {t("account")}
+                  </span>
+                  {editing.profile_id ? (
+                    <button
+                      type="button"
+                      onClick={() => handleUnlink(editing)}
+                      disabled={pending}
+                      className="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-800"
+                    >
+                      <Unlink className="h-3.5 w-3.5" />
+                      {t("accountUnlink")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openAccount(editing)}
+                      className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+                    >
+                      {t("accountCreate")}
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  {editing.profile_id ? t("accountActiveHint") : t("accountHint")}
+                </p>
+              </div>
+            )}
+
+            {error && <p className="text-sm text-red-600">{label(error)}</p>}
 
             <div className="flex items-center justify-between pt-2">
               {editing ? (
@@ -271,6 +400,121 @@ export default function TeachersView({
               </div>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {accountFor && (
+        <Modal title={t("accountTitle")} onClose={() => setAccountFor(null)}>
+          <form action={handleAccount} className="space-y-3">
+            <input type="hidden" name="teacher_id" value={accountFor.id} />
+
+            <div className="flex items-start gap-2 text-sm text-slate-500">
+              <KeyRound className="mt-0.5 h-4 w-4 shrink-0" />
+              {t("accountHint")}
+            </div>
+
+            <FloatInput
+              label={t("accountName")}
+              name="full_name"
+              required
+              defaultValue={`${accountFor.first_name} ${accountFor.last_name}`.trim()}
+            />
+            <FloatInput
+              label={t("accountEmail")}
+              name="email"
+              type="email"
+              required
+              defaultValue={accountFor.email ?? ""}
+            />
+            <FloatInput
+              label={t("phone")}
+              name="phone"
+              type="tel"
+              defaultValue={accountFor.phone ?? ""}
+            />
+
+            {accountError && (
+              <p className="text-sm text-red-600">{label(accountError)}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setAccountFor(null)}
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
+              >
+                {tc("cancel")}
+              </button>
+              <button
+                type="submit"
+                disabled={pending}
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {pending ? tc("loading") : t("accountSubmit")}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {inviteLink !== null && (
+        <Modal title={t("linkTitle")} onClose={() => setInviteLink(null)}>
+          <div className="space-y-3">
+            {linkedExisting || !inviteLink ? (
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {t("accountLinked")}
+              </p>
+            ) : (
+              <>
+                <div className="flex items-start gap-2 text-sm text-slate-500">
+                  <Link2 className="mt-0.5 h-4 w-4 shrink-0" />
+                  {t("linkHint")}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    readOnly
+                    value={inviteLink}
+                    onFocus={(e) => e.target.select()}
+                    dir="ltr"
+                    className="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-xs outline-none dark:border-slate-600 dark:bg-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={copyLink}
+                    className="flex shrink-0 items-center gap-1.5 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    {copied ? t("copied") : t("copy")}
+                  </button>
+                </div>
+                <a
+                  href={whatsAppLink(
+                    shareTo.phone,
+                    t("waMessage", { name: shareTo.name, link: inviteLink })
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  {t("whatsapp")}
+                </a>
+              </>
+            )}
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setInviteLink(null)}
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
+              >
+                {t("close")}
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

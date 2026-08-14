@@ -508,11 +508,17 @@ export default function LoginForm({
               {loading ? tc("loading") : t("submit")}
             </button>
 
+            {/* Enseignants et parents ne s'inscrivent pas eux-mêmes : leur
+                compte est créé par l'administration, qui leur envoie un lien. */}
+            <p className="mt-4 text-center text-xs text-slate-500">
+              {t("teacherParentHint")}
+            </p>
+
             {!isSchool && (
-              <p className="mt-4 text-center text-sm text-slate-500">
-                Pas encore d&apos;école ?{" "}
+              <p className="mt-3 text-center text-sm text-slate-500">
+                {t("noSchool")}{" "}
                 <Link href="/signup" className="text-indigo-600 hover:underline">
-                  Créer une école
+                  {t("createSchool")}
                 </Link>
               </p>
             )}

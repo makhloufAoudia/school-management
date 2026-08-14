@@ -1,0 +1,9 @@
+Bonne nouvelle : elle y est déjà, et elle est valide. Dans votre .env.local la ligne SUPABASE_SERVICE_ROLE_KEY= contient bien une clé role: service_role du projet gainsouhagihesmhdocr, valable jusqu'en 2036. Vous n'avez rien à ajouter.
+
+Si un jour vous devez la remplacer (clé régénérée, autre projet) :
+
+Supabase → votre projet → Settings → API Keys → onglet des clés héritées (service_role) → Reveal → copier.
+Dans .env.local, coller après le =, sur une seule ligne, sans guillemets ni espace autour du =.
+Enregistrer, puis relancer le serveur (restart-school.bat) — Next.js ne lit les variables d'environnement qu'au démarrage. C'est la cause n°1 du message « clé manquante » alors que la clé est bien dans le fichier.
+
+Deux points de vigilance : cette clé contourne toute la sécurité RLS, donc elle ne doit jamais apparaître côté navigateur ni sur GitHub (votre .gitignore exclut déjà .env*, c'est bon). Et si le site tourne aussi sur Vercel, .env.local n'y est pas envoyé : il faut ajouter la même variable dans Vercel → Settings → Environment Variables, puis redéployer.

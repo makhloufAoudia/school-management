@@ -33,12 +33,29 @@ export default async function StudentsPage() {
   const defaultClassId =
     role === "parent" ? ((classes as ClassOption[] | null)?.[0]?.id ?? "") : "";
 
+  // Noms des comptes parents rattachés, pour la colonne « Compte ».
+  const rows = (students as StudentRow[]) ?? [];
+  const guardianIds = [
+    ...new Set(rows.map((s) => s.guardian_id).filter(Boolean) as string[]),
+  ];
+  const guardians: Record<string, string> = {};
+  if (guardianIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", guardianIds);
+    for (const p of (profiles as { id: string; full_name: string }[]) ?? []) {
+      guardians[p.id] = p.full_name;
+    }
+  }
+
   return (
     <StudentsView
-      students={(students as StudentRow[]) ?? []}
+      students={rows}
       classOptions={(classes as ClassOption[]) ?? []}
       canEdit={role === "admin"}
       defaultClassId={defaultClassId}
+      guardians={guardians}
     />
   );
 }
