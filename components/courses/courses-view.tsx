@@ -25,15 +25,38 @@ import {
   deleteCourse,
   startMaterialUpload,
   finalizeMaterial,
+  uploadMaterial,
   deleteMaterial,
 } from "@/lib/actions/courses";
 
 // Taille max des PDF de cours (aussi la limite affichée à l'utilisateur).
 const MAX_PDF_BYTES = 15 * 1024 * 1024;
+// Au-delà, le PDF ne peut plus transiter par le serveur (limite Vercel ~4,5 Mo).
+const MAX_VIA_SERVEUR_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Envoi par le serveur : le PDF transite par la server action, qui le dépose
+ * sur Drive. Simple et fiable, mais limité par la taille de corps acceptée
+ * par Vercel. Sert de secours quand l'envoi direct échoue.
+ */
+async function uploadPdfViaServeur(
+  file: File,
+  courseId: string,
+  title: string
+): Promise<{ error: string | null }> {
+  const fd = new FormData();
+  fd.set("course_id", courseId);
+  fd.set("title", title);
+  fd.set("file", file);
+  return uploadMaterial(fd);
+}
 
 /**
  * Upload direct navigateur → Google Drive (session resumable).
  * Le PDF ne passe pas par le serveur Next.js, donc pas de limite Vercel.
+ * Si ce chemin échoue (extension de navigateur, proxy d'entreprise, réseau
+ * mobile filtrant… — tout ce qui casse une requête cross-origin), on retente
+ * automatiquement par le serveur tant que le fichier n'est pas trop gros.
  * Renvoie { error } (null si succès) pour rester compatible avec l'appelant.
  */
 async function uploadPdfDirect(
@@ -44,6 +67,14 @@ async function uploadPdfDirect(
   if (file.type !== "application/pdf") return { error: "NOT_PDF" };
   if (file.size === 0) return { error: "NO_FILE" };
   if (file.size > MAX_PDF_BYTES) return { error: "TOO_LARGE" };
+
+  const secours = async (raison: string) => {
+    if (file.size > MAX_VIA_SERVEUR_BYTES) return { error: raison };
+    const res = await uploadPdfViaServeur(file, courseId, title);
+    // Si le secours échoue aussi, on remonte la cause d'origine : plus utile
+    // pour comprendre que l'erreur du second essai.
+    return res.error ? { error: `${raison} / ${res.error}` } : res;
+  };
 
   const start = await startMaterialUpload({ courseId, fileName: title || file.name });
   if (start.error || !start.uploadUrl) {
@@ -57,12 +88,12 @@ async function uploadPdfDirect(
       headers: { "Content-Type": "application/pdf" },
       body: file,
     });
-    if (!put.ok) return { error: `DRIVE_PUT_${put.status}` };
+    if (!put.ok) return secours(`DRIVE_PUT_${put.status}`);
     const data = (await put.json()) as { id?: string };
-    if (!data.id) return { error: "DRIVE_NO_ID" };
+    if (!data.id) return secours("DRIVE_NO_ID");
     driveId = data.id;
   } catch {
-    return { error: "DRIVE_PUT_FAILED" };
+    return secours("DRIVE_PUT_FAILED");
   }
 
   return finalizeMaterial({ courseId, title, driveId });

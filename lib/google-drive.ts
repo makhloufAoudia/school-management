@@ -123,10 +123,15 @@ export async function uploadToDrive(
 export async function createResumableUploadSession(
   fileName: string,
   mimeType: string,
-  folderId?: string
+  folderId?: string,
+  origin?: string
 ): Promise<string> {
   const token = await getAccessToken();
 
+  // Google n'autorise le PUT du navigateur sur l'URL de session que si la
+  // requête d'ouverture porte l'en-tête Origin du site. Sans lui, la session
+  // est créée mais le navigateur se heurte à un blocage CORS et l'envoi
+  // échoue (DRIVE_PUT_FAILED). On transmet donc l'origine de la page.
   const res = await fetch(
     "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id",
     {
@@ -135,6 +140,7 @@ export async function createResumableUploadSession(
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json; charset=UTF-8",
         "X-Upload-Content-Type": mimeType,
+        ...(origin ? { Origin: origin } : {}),
       },
       body: JSON.stringify({
         name: fileName,

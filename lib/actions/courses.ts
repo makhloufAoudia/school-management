@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import {
   uploadToDrive,
@@ -158,11 +159,19 @@ export async function startMaterialUpload(input: {
   }
 
   try {
+    // Origine de la page appelante : Google ne laisse le navigateur envoyer le
+    // fichier sur l'URL de session que si elle a été ouverte avec cet en-tête.
+    const h = await headers();
+    const host = h.get("x-forwarded-host") ?? h.get("host");
+    const proto = h.get("x-forwarded-proto") ?? "https";
+    const origin = host ? `${proto}://${host}` : undefined;
+
     const folderId = await getSchoolFolderId(schoolId).catch(() => undefined);
     const uploadUrl = await createResumableUploadSession(
       input.fileName || "cours.pdf",
       "application/pdf",
-      folderId
+      folderId,
+      origin
     );
     return { uploadUrl, error: null };
   } catch (e) {
