@@ -8,7 +8,8 @@
     "edit": "Modifier",
     "add": "Ajouter",
     "search": "Rechercher",
-    "comingSoon": "Cette section sera développée dans la prochaine étape."
+    "comingSoon": "Cette section sera développée dans la prochaine étape.",
+    "close": "Fermer"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -21,7 +22,8 @@
     "settings": "Paramètres",
     "logout": "Déconnexion",
     "users": "Utilisateurs",
-    "schools": "Écoles"
+    "schools": "Écoles",
+    "menu": "Menu"
   },
   "login": {
     "title": "Connexion",

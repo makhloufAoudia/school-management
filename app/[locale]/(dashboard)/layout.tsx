@@ -28,7 +28,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar role={role} userName={userName} isSuperAdmin={isSuperAdmin} />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="w-full min-w-0 flex-1 p-4 pt-20 lg:p-6">{children}</main>
     </div>
   );
 }

@@ -8,7 +8,8 @@
     "edit": "Ẓreg",
     "add": "Rnu",
     "search": "Nadi",
-    "comingSoon": "Aḥric-a ad yettwaseggem deg usurif i d-iteddun."
+    "comingSoon": "Aḥric-a ad yettwaseggem deg usurif i d-iteddun.",
+    "close": "Mdel"
   },
   "nav": {
     "dashboard": "Tafelwit n usenqed",
@@ -21,7 +22,8 @@
     "settings": "Iɣewwaṛen",
     "logout": "Ffeɣ",
     "users": "Iseqdacen",
-    "schools": "Tiɣermiwin"
+    "schools": "Tiɣermiwin",
+    "menu": "Umuɣ"
   },
   "login": {
     "title": "Anekcum",

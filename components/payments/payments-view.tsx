@@ -470,7 +470,7 @@ export default function PaymentsView({
 
       {view === "dues" && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <th className="px-4 py-3 text-start font-medium">{t("student")}</th>
@@ -562,7 +562,7 @@ export default function PaymentsView({
 
       {view === "list" && (
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <th className="px-4 py-3 text-start font-medium">{t("student")}</th>
@@ -688,7 +688,7 @@ export default function PaymentsView({
 
             <FloatInput label={t("dueLabel")} name="label" required />
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FloatInput
                 label={t("amount")}
                 type="number"
@@ -748,7 +748,7 @@ export default function PaymentsView({
               ))}
             </FloatSelect>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FloatInput
                 label={t("amount")}
                 type="number"
@@ -771,7 +771,7 @@ export default function PaymentsView({
               </FloatSelect>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <FloatSelect
                 label={t("method")}
                 name="method"

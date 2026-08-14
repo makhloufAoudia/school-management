@@ -8,7 +8,8 @@
     "edit": "Edit",
     "add": "Add",
     "search": "Search",
-    "comingSoon": "This section will be built in the next step."
+    "comingSoon": "This section will be built in the next step.",
+    "close": "Close"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -21,7 +22,8 @@
     "settings": "Settings",
     "logout": "Log out",
     "users": "Users",
-    "schools": "Schools"
+    "schools": "Schools",
+    "menu": "Menu"
   },
   "login": {
     "title": "Sign in",
