@@ -103,6 +103,8 @@ export default function CoursesView({
   role,
   driveReady,
   defaultClassId = "",
+  editableClassIds = [],
+  myTeacherId = null,
 }: {
   courses: CourseRow[];
   classOptions: Option[];
@@ -111,12 +113,21 @@ export default function CoursesView({
   role: "admin" | "teacher" | "parent";
   driveReady: boolean;
   defaultClassId?: string;
+  /** Enseignant : classes où il peut créer un cours (prof principal ou déjà en poste). */
+  editableClassIds?: string[];
+  /** Enseignant : sa propre fiche ; le cours créé lui est attribué. */
+  myTeacherId?: string | null;
 }) {
   const t = useTranslations("courses");
   const tn = useTranslations("nav");
   const tc = useTranslations("common");
   const router = useRouter();
+  // canEdit  : modifier ou supprimer un cours existant — administration seule.
+  // canCreate: créer un cours — l'enseignant aussi, dans ses classes.
   const canEdit = role === "admin";
+  const canCreate =
+    role === "admin" ||
+    (role === "teacher" && !!myTeacherId && editableClassIds.length > 0);
   const canManageFiles = role === "admin" || role === "teacher";
 
   const [classFilter, setClassFilter] = useState(defaultClassId);
@@ -177,6 +188,16 @@ export default function CoursesView({
     () =>
       classFilter ? courses.filter((c) => c.class_id === classFilter) : courses,
     [courses, classFilter]
+  );
+
+  // Classes proposées dans le formulaire : toutes pour l'administration,
+  // seulement les siennes pour l'enseignant.
+  const formClassOptions = useMemo(
+    () =>
+      role === "admin"
+        ? classOptions
+        : classOptions.filter((c) => editableClassIds.includes(c.id)),
+    [role, classOptions, editableClassIds]
   );
 
   function sortVal(c: CourseRow, key: SortKey): string | number {
@@ -357,7 +378,7 @@ export default function CoursesView({
             ({filtered.length})
           </span>
         </h1>
-        {canEdit && (
+        {canCreate && (
           <button
             onClick={openAdd}
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
@@ -573,7 +594,7 @@ export default function CoursesView({
           title={current ? (canEdit ? t("edit") : (current.subjects?.name ?? "")) : t("add")}
           onClose={() => setShowForm(false)}
         >
-          {canEdit && (
+          {(canEdit || (!current && canCreate)) && (
             <form action={handleSubmit} className="space-y-3">
               {current && <input type="hidden" name="id" value={current.id} />}
 
@@ -598,7 +619,7 @@ export default function CoursesView({
                   defaultValue={current?.class_id ?? ""}
                 >
                   <option value="" disabled></option>
-                  {classOptions.map((c) => (
+                  {formClassOptions.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -606,18 +627,24 @@ export default function CoursesView({
                 </FloatSelect>
               </div>
 
-              <FloatSelect
-                label={t("teacher")}
-                name="teacher_id"
-                defaultValue={current?.teacher_id ?? ""}
-              >
-                <option value="">—</option>
-                {teacherOptions.map((x) => (
-                  <option key={x.id} value={x.id}>
-                    {x.name}
-                  </option>
-                ))}
-              </FloatSelect>
+              {canEdit ? (
+                <FloatSelect
+                  label={t("teacher")}
+                  name="teacher_id"
+                  defaultValue={current?.teacher_id ?? ""}
+                >
+                  <option value="">—</option>
+                  {teacherOptions.map((x) => (
+                    <option key={x.id} value={x.id}>
+                      {x.name}
+                    </option>
+                  ))}
+                </FloatSelect>
+              ) : (
+                // L'enseignant se crée un cours à lui-même : pas de choix à
+                // faire, et le serveur revérifie de toute façon.
+                <input type="hidden" name="teacher_id" value={myTeacherId ?? ""} />
+              )}
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <FloatSelect

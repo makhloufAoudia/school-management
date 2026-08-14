@@ -13,7 +13,7 @@ import { getSchoolFolderId } from "@/lib/school-drive";
 import { getSessionProfile } from "@/lib/supabase/profile";
 
 export async function saveCourse(formData: FormData) {
-  const supabase = await createClient();
+  const { supabase, userId, role } = await getSessionProfile();
 
   const id = formData.get("id") as string | null;
   const payload = {
@@ -25,6 +25,23 @@ export async function saveCourse(formData: FormData) {
     end_time: (formData.get("end_time") as string) || null,
     room: (formData.get("room") as string) || null,
   };
+
+  // L'enseignant crée un cours pour lui-même, dans ses classes uniquement.
+  // La RLS reste la garde finale ; ce contrôle évite un aller-retour inutile
+  // et empêche qu'un cours soit attribué à un collègue. La modification d'un
+  // cours existant passe toujours par une demande d'emploi du temps.
+  if (role === "teacher") {
+    if (id) return { error: "ERR_unauthorized", id };
+    const { data: me } = await supabase
+      .from("teachers")
+      .select("id")
+      .eq("profile_id", userId)
+      .maybeSingle();
+    if (!me) return { error: "ERR_no_teacher_record", id: null };
+    payload.teacher_id = me.id;
+  } else if (role !== "admin") {
+    return { error: "ERR_unauthorized", id };
+  }
 
   if (id) {
     const { error } = await supabase.from("courses").update(payload).eq("id", id);
@@ -43,7 +60,9 @@ export async function saveCourse(formData: FormData) {
 }
 
 export async function deleteCourse(id: string) {
-  const supabase = await createClient();
+  const { supabase, role } = await getSessionProfile();
+  // Supprimer un cours reste réservé à l'administration.
+  if (role !== "admin") return { error: "ERR_unauthorized" };
 
   // Supprimer d'abord les fichiers Drive associés
   const { data: materials } = await supabase
