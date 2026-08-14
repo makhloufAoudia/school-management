@@ -96,7 +96,9 @@
     "ERR_levelRequired": "Level is required",
     "ERR_feeRequired": "Monthly fee must be greater than 0",
     "ERR_feeInvalid": "Invalid amount",
-    "feeHistory": "Fee history"
+    "feeHistory": "Fee history",
+    "headTeacher": "Head teacher",
+    "noHeadTeacher": "None"
   },
   "students": {
     "add": "Add student",

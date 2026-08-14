@@ -24,9 +24,13 @@ export async function saveClass(formData: FormData) {
   if (!Number.isFinite(extra_fee) || extra_fee < 0)
     return { error: "ERR_feeInvalid" };
 
+  const head = ((formData.get("head_teacher_id") as string) || "").trim();
+
   const payload = {
     name,
     level,
+    // Professeur principal : facultatif, vide = aucun.
+    head_teacher_id: head || null,
     capacity: capacity >= 1 ? capacity : 30,
     monthly_fee,
     extra_fee,

@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import ClassesView, {
   type ClassRow,
   type FeeHistoryRow,
+  type TeacherOption,
 } from "@/components/classes/classes-view";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,8 @@ export default async function ClassesPage() {
 
   const isAdmin = role === "admin";
 
-  const [{ data: year }, { data: classes }, feeHistoryRes] = await Promise.all([
+  const [{ data: year }, { data: classes }, feeHistoryRes, teachersRes] =
+    await Promise.all([
     supabase
       .from("academic_years")
       .select("id, label")
@@ -37,7 +39,20 @@ export default async function ClassesPage() {
           .select("id, class_id, old_fee, new_fee, changed_at")
           .order("changed_at", { ascending: false })
       : Promise.resolve({ data: [] as FeeHistoryRow[] }),
+    // Liste des enseignants, pour choisir le professeur principal.
+    isAdmin
+      ? supabase
+          .from("teachers")
+          .select("id, first_name, last_name")
+          .eq("is_active", true)
+          .order("last_name")
+      : Promise.resolve({ data: [] }),
   ]);
+
+  type RawTeacher = { id: string; first_name: string; last_name: string };
+  const teacherOptions: TeacherOption[] = (
+    (teachersRes.data as RawTeacher[] | null) ?? []
+  ).map((x) => ({ id: x.id, name: `${x.first_name} ${x.last_name}` }));
 
   return (
     <ClassesView
@@ -45,6 +60,7 @@ export default async function ClassesPage() {
       feeHistory={(feeHistoryRes.data as FeeHistoryRow[]) ?? []}
       yearId={year?.id ?? null}
       yearLabel={year?.label ?? ""}
+      teacherOptions={teacherOptions}
       canEdit={isAdmin}
     />
   );

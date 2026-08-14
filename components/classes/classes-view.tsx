@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Plus, Trash2, History } from "lucide-react";
 import Modal from "@/components/modal";
-import { FloatInput } from "@/components/ui/fields";
+import { FloatInput, FloatSelect } from "@/components/ui/fields";
 import { saveClass, deleteClass } from "@/lib/actions/classes";
 import { CURRENCY, formatMoney } from "@/lib/format";
 
@@ -17,8 +17,11 @@ export type ClassRow = {
   monthly_fee: number;
   extra_fee: number;
   academic_year_id: string;
+  head_teacher_id: string | null;
   students: { count: number }[];
 };
+
+export type TeacherOption = { id: string; name: string };
 
 export type FeeHistoryRow = {
   id: string;
@@ -41,12 +44,15 @@ export default function ClassesView({
   feeHistory = [],
   yearId,
   yearLabel,
+  teacherOptions = [],
   canEdit,
 }: {
   classes: ClassRow[];
   feeHistory?: FeeHistoryRow[];
   yearId: string | null;
   yearLabel: string;
+  // Enseignants proposés comme professeur principal.
+  teacherOptions?: TeacherOption[];
   canEdit: boolean;
 }) {
   const t = useTranslations("classes");
@@ -57,6 +63,10 @@ export default function ClassesView({
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  // Nom du professeur principal, pour l'affichage du tableau.
+  const teacherName = (id: string | null) =>
+    id ? (teacherOptions.find((x) => x.id === id)?.name ?? null) : null;
 
   // Historique du tarif de la classe en cours d'édition (le plus récent d'abord).
   const editingHistory = useMemo(
@@ -124,6 +134,7 @@ export default function ClassesView({
             <tr className="border-b border-slate-200 text-start text-slate-500 dark:border-slate-800 dark:text-slate-400">
               <th className="px-4 py-3 text-start font-medium">{t("name")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("level")}</th>
+              <th className="px-4 py-3 text-start font-medium">{t("headTeacher")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("students")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("capacity")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("monthlyFee")}</th>
@@ -133,7 +144,7 @@ export default function ClassesView({
           <tbody>
             {classes.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
                   {t("empty")}
                 </td>
               </tr>
@@ -152,6 +163,11 @@ export default function ClassesView({
                 >
                   <td className="px-4 py-3 font-medium">{c.name}</td>
                   <td className="px-4 py-3">{c.level}</td>
+                  <td className="px-4 py-3">
+                    {teacherName(c.head_teacher_id) ?? (
+                      <span className="text-slate-400">{t("noHeadTeacher")}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={
@@ -197,6 +213,19 @@ export default function ClassesView({
               required
               defaultValue={editing?.level ?? ""}
             />
+
+            <FloatSelect
+              label={t("headTeacher")}
+              name="head_teacher_id"
+              defaultValue={editing?.head_teacher_id ?? ""}
+            >
+              <option value="">{t("noHeadTeacher")}</option>
+              {teacherOptions.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.name}
+                </option>
+              ))}
+            </FloatSelect>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <FloatInput

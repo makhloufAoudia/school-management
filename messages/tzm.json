@@ -96,7 +96,9 @@
     "ERR_levelRequired": "Aswir yettwasra",
     "ERR_feeRequired": "Ixelliṣen n wayyur ilaq ad yugar 0",
     "ERR_feeInvalid": "Azal ur nṣeḥḥa ara",
-    "feeHistory": "Amazray n yixelliṣen"
+    "feeHistory": "Amazray n yixelliṣen",
+    "headTeacher": "Aselmad agejdan",
+    "noHeadTeacher": "Ulac"
   },
   "students": {
     "add": "Rnu anelmad",

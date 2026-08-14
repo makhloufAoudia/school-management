@@ -96,7 +96,9 @@
     "ERR_levelRequired": "Le niveau est obligatoire",
     "ERR_feeRequired": "Le tarif mensuel doit être supérieur à 0",
     "ERR_feeInvalid": "Montant invalide",
-    "feeHistory": "Historique des tarifs"
+    "feeHistory": "Historique des tarifs",
+    "headTeacher": "Professeur principal",
+    "noHeadTeacher": "Aucun"
   },
   "students": {
     "add": "Ajouter un élève",

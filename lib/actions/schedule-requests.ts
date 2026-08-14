@@ -38,6 +38,18 @@ export async function createScheduleRequest(formData: FormData) {
 
   const day = optional(formData, "day_of_week");
 
+  // Un cours proposé par un enseignant lui est attribué d'office : sans ça,
+  // le cours créé à l'acceptation n'aurait aucun enseignant.
+  let teacherId = optional(formData, "teacher_id");
+  if (kind === "create" && !teacherId) {
+    const { data: me } = await supabase
+      .from("teachers")
+      .select("id")
+      .eq("profile_id", userId)
+      .maybeSingle();
+    teacherId = me?.id ?? null;
+  }
+
   const { error } = await supabase.from("schedule_requests").insert({
     school_id: schoolId,
     course_id: courseId,
@@ -45,6 +57,7 @@ export async function createScheduleRequest(formData: FormData) {
     kind,
     class_id: optional(formData, "class_id"),
     subject_id: optional(formData, "subject_id"),
+    teacher_id: teacherId,
     day_of_week: day === null ? null : Number(day),
     start_time: optional(formData, "start_time"),
     end_time: optional(formData, "end_time"),

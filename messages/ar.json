@@ -96,7 +96,9 @@
     "ERR_levelRequired": "المستوى مطلوب",
     "ERR_feeRequired": "يجب أن تكون الرسوم الشهرية أكبر من 0",
     "ERR_feeInvalid": "مبلغ غير صالح",
-    "feeHistory": "سجل الرسوم"
+    "feeHistory": "سجل الرسوم",
+    "headTeacher": "الأستاذ المسؤول",
+    "noHeadTeacher": "لا يوجد"
   },
   "students": {
     "add": "إضافة تلميذ",
