@@ -96,9 +96,14 @@ export async function updateProfileName(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
+  // Nom et téléphone du compte connecté. L'e-mail n'est pas modifiable ici :
+  // c'est l'identifiant de connexion, il se change côté administration.
+  const full_name = ((formData.get("full_name") as string) || "").trim();
+  const phone = ((formData.get("phone") as string) || "").trim();
+
   const { error } = await supabase
     .from("profiles")
-    .update({ full_name: (formData.get("full_name") as string).trim() })
+    .update({ full_name, phone: phone || null })
     .eq("id", user.id);
   revalidatePath("/[locale]/settings", "page");
   return { error: error?.message ?? null };

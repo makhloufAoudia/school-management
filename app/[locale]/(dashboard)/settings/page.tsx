@@ -22,7 +22,11 @@ export default async function SettingsPage() {
 
   const { supabase, role, fullName, schoolId } = await getSessionProfile();
 
-  const [{ data: years }, { data: subjects }, { data: school }] =
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [{ data: years }, { data: subjects }, { data: school }, { data: me }] =
     await Promise.all([
       supabase
         .from("academic_years")
@@ -37,6 +41,9 @@ export default async function SettingsPage() {
             .eq("id", schoolId)
             .single()
         : Promise.resolve({ data: null }),
+      user
+        ? supabase.from("profiles").select("phone").eq("id", user.id).single()
+        : Promise.resolve({ data: null }),
     ]);
 
   return (
@@ -45,6 +52,8 @@ export default async function SettingsPage() {
       subjects={(subjects as SubjectRow[]) ?? []}
       school={(school as SchoolRow) ?? null}
       fullName={fullName}
+      email={user?.email ?? ""}
+      phone={(me as { phone: string | null } | null)?.phone ?? ""}
       isAdmin={role === "admin"}
     />
   );

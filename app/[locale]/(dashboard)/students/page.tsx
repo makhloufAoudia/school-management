@@ -33,6 +33,20 @@ export default async function StudentsPage() {
   const defaultClassId =
     role === "parent" ? ((classes as ClassOption[] | null)?.[0]?.id ?? "") : "";
 
+  // L'enseignant gère les élèves des classes où il a un cours : on limite la
+  // liste déroulante à ces classes, sinon l'enregistrement serait refusé par
+  // la sécurité de la base (voir 2026-08-droits-enseignant.sql).
+  let classOptions = (classes as ClassOption[]) ?? [];
+  if (role === "teacher") {
+    const { data: mine } = await supabase.from("courses").select("class_id");
+    const allowed = new Set(
+      ((mine as { class_id: string | null }[] | null) ?? [])
+        .map((c) => c.class_id)
+        .filter(Boolean) as string[]
+    );
+    classOptions = classOptions.filter((c) => allowed.has(c.id));
+  }
+
   // Noms des comptes parents rattachés, pour la colonne « Compte ».
   const rows = (students as StudentRow[]) ?? [];
   const guardianIds = [
@@ -52,8 +66,10 @@ export default async function StudentsPage() {
   return (
     <StudentsView
       students={rows}
-      classOptions={(classes as ClassOption[]) ?? []}
-      canEdit={role === "admin"}
+      classOptions={classOptions}
+      canEdit={role === "admin" || role === "teacher"}
+      canDelete={role === "admin"}
+      canManageAccounts={role === "admin"}
       defaultClassId={defaultClassId}
       guardians={guardians}
     />

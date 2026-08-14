@@ -23,7 +23,8 @@
     "logout": "Ffeɣ",
     "users": "Iseqdacen",
     "schools": "Tiɣermiwin",
-    "menu": "Umuɣ"
+    "menu": "Umuɣ",
+    "schedule": "Isuteren"
   },
   "login": {
     "title": "Anekcum",
@@ -306,7 +307,10 @@
     "school": "Aɣerbaz",
     "schoolName": "Isem n uɣerbaz",
     "schoolSlug": "Asulay",
-    "saveError": "Ur yezmir ara ad yeḥrez"
+    "saveError": "Ur yezmir ara ad yeḥrez",
+    "email": "Imayl n unekcum",
+    "phone": "Tiliɣri",
+    "emailHint": "I ubeddel n yimayl, nermes tanbaḍt n uɣerbaz."
   },
   "users": {
     "title": "Iseqdacen",
@@ -396,5 +400,32 @@
     "ERR_cannotTargetSelf": "Ur tezmireḍ ara ad tegreḍ tigawt-a i umiḍan-ik.",
     "ERR_cannotTargetSuperAdmin": "Anedbal ameqqran ur yezmir ad yettwasewḥel neɣ ad yettwakkes.",
     "ERR_notAnAdmin": "Amiḍan-a mačči d anedbal n tɣiwant."
+  },
+  "schedule": {
+    "title": "Isuteren n wakud n iɣimiten",
+    "add": "Asuter amaynut",
+    "empty": "Ulac isuteren",
+    "hintTeacher": "Akud n iɣimiten d tanbaḍt i t-yesferken. Sumer dagi abeddel n usrag, n texxamt neɣ n wass: ad tefkeḍ-ak tiririt.",
+    "hintAdmin": "Isuteren n yiselmaden. M'ara tqebleḍ, aɣimi ad yettwabeddel s wudem awurman.",
+    "kind": "Anaw n usuter",
+    "kind_update": "Beddel aɣimi",
+    "kind_create": "Rnu aɣimi",
+    "kind_delete": "Kkes aɣimi",
+    "status_pending": "Yettraju",
+    "status_approved": "Yettwaqbel",
+    "status_rejected": "Yugi",
+    "course": "Aɣimi yeɛnan",
+    "note": "Ssebba n usuter",
+    "formHint": "Eǧǧ d ilem ayen ur tebɣiḍ ara ad tbeddleḍ.",
+    "submit": "Azen asuter",
+    "approve": "Qbel",
+    "reject": "Agi",
+    "adminNote": "Tiririt n tenbaḍt",
+    "noChange": "Ulac abeddel yettwafernen",
+    "ERR_unauthorized": "Tigawt ur tettusireg ara.",
+    "ERR_course_required": "Fren aɣimi yeɛnan.",
+    "ERR_class_subject_required": "Asmil d tɣawsa d ilzimen.",
+    "ERR_not_found": "Ulac asuter-a.",
+    "ERR_already_decided": "Asuter-a yettwaseqdec yakan."
   }
 }

@@ -17,6 +17,7 @@ import {
   GraduationCap,
   Settings,
   Building2,
+  CalendarClock,
   Menu,
   X,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const NAV = [
   { href: "/teachers", key: "teachers", icon: UserCog, roles: ["admin"] },
   { href: "/classes", key: "classes", icon: School, roles: ["admin"] },
   { href: "/courses", key: "courses", icon: BookOpen, roles: ["admin", "teacher", "parent"] },
+  { href: "/schedule", key: "schedule", icon: CalendarClock, roles: ["admin", "teacher"] },
   { href: "/payments", key: "payments", icon: CreditCard, roles: ["admin", "parent"] },
   { href: "/finance", key: "finance", icon: Wallet, roles: ["admin"] },
   { href: "/users", key: "users", icon: UsersRound, roles: ["admin"] },

@@ -65,12 +65,18 @@ export default function SettingsView({
   subjects,
   school = null,
   fullName,
+  email = "",
+  phone = "",
   isAdmin,
 }: {
   years: YearRow[];
   subjects: SubjectRow[];
   school?: SchoolRow | null;
   fullName: string;
+  // Coordonnées du compte connecté : l'e-mail sert d'identifiant, le
+  // téléphone est modifiable par chacun (enseignant, parent, admin).
+  email?: string;
+  phone?: string;
   isAdmin: boolean;
 }) {
   const t = useTranslations("settings");
@@ -152,9 +158,21 @@ export default function SettingsView({
               refresh();
             })
           }
-          className="flex items-end gap-3"
+          className="space-y-3"
         >
-          <div className="flex-1">
+          {/* L'e-mail est l'identifiant de connexion : il est affiché ici,
+              mais se modifie depuis la page Utilisateurs (administration). */}
+          <div>
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800">
+              <span className="text-xs text-slate-500">{t("email")}</span>
+              <div dir="ltr" className="truncate">
+                {email || "—"}
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">{t("emailHint")}</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FloatInput
               label={t("fullName")}
               name="full_name"
@@ -162,7 +180,15 @@ export default function SettingsView({
               defaultValue={fullName}
               onChange={() => setNameMsg(false)}
             />
+            <FloatInput
+              label={t("phone")}
+              name="phone"
+              type="tel"
+              defaultValue={phone}
+              onChange={() => setNameMsg(false)}
+            />
           </div>
+
           <button type="submit" disabled={pending} className={btnPrimary}>
             {tc("save")}
           </button>

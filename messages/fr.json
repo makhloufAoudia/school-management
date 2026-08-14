@@ -23,7 +23,8 @@
     "logout": "Déconnexion",
     "users": "Utilisateurs",
     "schools": "Écoles",
-    "menu": "Menu"
+    "menu": "Menu",
+    "schedule": "Demandes"
   },
   "login": {
     "title": "Connexion",
@@ -306,7 +307,10 @@
     "school": "École",
     "schoolName": "Nom de l'école",
     "schoolSlug": "Identifiant",
-    "saveError": "Enregistrement impossible"
+    "saveError": "Enregistrement impossible",
+    "email": "E-mail de connexion",
+    "phone": "Téléphone",
+    "emailHint": "Pour changer d'e-mail, contactez l'administration de l'école."
   },
   "users": {
     "title": "Utilisateurs",
@@ -396,5 +400,32 @@
     "ERR_cannotTargetSelf": "Vous ne pouvez pas appliquer cette action à votre propre compte.",
     "ERR_cannotTargetSuperAdmin": "Le super-administrateur ne peut être ni bloqué ni supprimé.",
     "ERR_notAnAdmin": "Ce compte n'est pas un administrateur d'école."
+  },
+  "schedule": {
+    "title": "Demandes d'emploi du temps",
+    "add": "Nouvelle demande",
+    "empty": "Aucune demande pour le moment",
+    "hintTeacher": "L'emploi du temps est géré par l'administration. Proposez ici un changement d'horaire, de salle ou de jour : vous serez informé de la réponse.",
+    "hintAdmin": "Demandes déposées par les enseignants. En acceptant, le cours est modifié automatiquement.",
+    "kind": "Type de demande",
+    "kind_update": "Modifier un cours",
+    "kind_create": "Ajouter un cours",
+    "kind_delete": "Supprimer un cours",
+    "status_pending": "En attente",
+    "status_approved": "Acceptée",
+    "status_rejected": "Refusée",
+    "course": "Cours concerné",
+    "note": "Motif de la demande",
+    "formHint": "Laissez vide ce que vous ne souhaitez pas changer.",
+    "submit": "Envoyer la demande",
+    "approve": "Accepter",
+    "reject": "Refuser",
+    "adminNote": "Réponse de l'administration",
+    "noChange": "Aucun changement précisé",
+    "ERR_unauthorized": "Action non autorisée.",
+    "ERR_course_required": "Choisissez le cours concerné.",
+    "ERR_class_subject_required": "La classe et la matière sont obligatoires.",
+    "ERR_not_found": "Demande introuvable.",
+    "ERR_already_decided": "Cette demande a déjà été traitée."
   }
 }

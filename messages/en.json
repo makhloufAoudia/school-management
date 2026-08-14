@@ -23,7 +23,8 @@
     "logout": "Log out",
     "users": "Users",
     "schools": "Schools",
-    "menu": "Menu"
+    "menu": "Menu",
+    "schedule": "Requests"
   },
   "login": {
     "title": "Sign in",
@@ -306,7 +307,10 @@
     "school": "School",
     "schoolName": "School name",
     "schoolSlug": "Identifier",
-    "saveError": "Could not save"
+    "saveError": "Could not save",
+    "email": "Login email",
+    "phone": "Phone",
+    "emailHint": "To change your email, contact the school administration."
   },
   "users": {
     "title": "Users",
@@ -396,5 +400,32 @@
     "ERR_cannotTargetSelf": "You cannot apply this action to your own account.",
     "ERR_cannotTargetSuperAdmin": "The super administrator cannot be blocked or deleted.",
     "ERR_notAnAdmin": "This account is not a school administrator."
+  },
+  "schedule": {
+    "title": "Timetable requests",
+    "add": "New request",
+    "empty": "No requests yet",
+    "hintTeacher": "The timetable is managed by the administration. Suggest a change of time, room or day here: you will be told the answer.",
+    "hintAdmin": "Requests submitted by teachers. Accepting applies the change to the course automatically.",
+    "kind": "Request type",
+    "kind_update": "Change a course",
+    "kind_create": "Add a course",
+    "kind_delete": "Remove a course",
+    "status_pending": "Pending",
+    "status_approved": "Accepted",
+    "status_rejected": "Rejected",
+    "course": "Course concerned",
+    "note": "Reason",
+    "formHint": "Leave blank whatever you do not want to change.",
+    "submit": "Send request",
+    "approve": "Accept",
+    "reject": "Reject",
+    "adminNote": "Administration's answer",
+    "noChange": "No change specified",
+    "ERR_unauthorized": "Action not allowed.",
+    "ERR_course_required": "Choose the course concerned.",
+    "ERR_class_subject_required": "Class and subject are required.",
+    "ERR_not_found": "Request not found.",
+    "ERR_already_decided": "This request has already been handled."
   }
 }

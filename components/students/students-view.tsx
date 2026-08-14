@@ -49,12 +49,18 @@ export default function StudentsView({
   students,
   classOptions,
   canEdit,
+  canDelete = true,
+  canManageAccounts = true,
   defaultClassId = "",
   guardians = {},
 }: {
   students: StudentRow[];
   classOptions: ClassOption[];
   canEdit: boolean;
+  // L'enseignant ajoute et corrige les fiches, mais ne supprime pas et ne
+  // crée pas de compte parent : ces deux gestes restent à l'administration.
+  canDelete?: boolean;
+  canManageAccounts?: boolean;
   defaultClassId?: string;
   // id du compte parent -> nom complet, pour l'affichage de la fiche
   guardians?: Record<string, string>;
@@ -358,7 +364,7 @@ export default function StudentsView({
               defaultValue={editing?.notes ?? ""}
             />
 
-            {editing && (
+            {editing && canManageAccounts && (
               <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm font-medium">
@@ -399,7 +405,7 @@ export default function StudentsView({
             {error && <p className="text-sm text-red-600">{label(error)}</p>}
 
             <div className="flex items-center justify-between pt-2">
-              {editing ? (
+              {editing && canDelete ? (
                 <button
                   type="button"
                   onClick={() => handleDelete(editing.id)}
