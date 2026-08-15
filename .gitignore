@@ -16,3 +16,7 @@ next-env.d.ts
 lib/_synctest.txt
 
 .fuse_hidden*
+
+# Jetons/secrets colles a la main (ne jamais publier)
+jeton-*.txt
+*jeton*.txt

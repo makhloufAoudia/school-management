@@ -32,7 +32,7 @@ export function FloatInput({
   const isPassword = props.type === "password";
   const type = isPassword && reveal ? "text" : props.type;
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <input
         id={id}
         {...props}
@@ -68,7 +68,7 @@ export function FloatSelect({
 }: { label: string } & React.SelectHTMLAttributes<HTMLSelectElement>) {
   const id = useId();
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <select id={id} {...props} className={boxBase}>
         {children}
       </select>
@@ -86,7 +86,7 @@ export function FloatTextarea({
 }: { label: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   const id = useId();
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <textarea id={id} {...props} placeholder=" " className={boxBase} />
       <label htmlFor={id} className={labelDynamic}>
         {label}

@@ -16,6 +16,7 @@ import {
   ArrowUp,
   ArrowDown,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
@@ -62,7 +63,8 @@ async function uploadPdfViaServeur(
 async function uploadPdfDirect(
   file: File,
   courseId: string,
-  title: string
+  title: string,
+  onProgress?: (pct: number | null) => void
 ): Promise<{ error: string | null }> {
   if (file.type !== "application/pdf") return { error: "NOT_PDF" };
   if (file.size === 0) return { error: "NO_FILE" };
@@ -70,33 +72,64 @@ async function uploadPdfDirect(
 
   const secours = async (raison: string) => {
     if (file.size > MAX_VIA_SERVEUR_BYTES) return { error: raison };
+    // Le renvoi par le serveur ne remonte pas d'avancement : barre indéterminée.
+    onProgress?.(null);
     const res = await uploadPdfViaServeur(file, courseId, title);
     // Si le secours échoue aussi, on remonte la cause d'origine : plus utile
     // pour comprendre que l'erreur du second essai.
     return res.error ? { error: `${raison} / ${res.error}` } : res;
   };
 
+  onProgress?.(0);
   const start = await startMaterialUpload({ courseId, fileName: title || file.name });
   if (start.error || !start.uploadUrl) {
     return { error: start.error ?? "UPLOAD_INIT_FAILED" };
   }
 
+  const put = await putAvecProgression(start.uploadUrl, file, (pct) =>
+    // On garde les 100 % pour la fin (enregistrement en base compris).
+    onProgress?.(Math.min(99, pct))
+  );
+  if (put.status === 0) return secours("DRIVE_PUT_FAILED");
+  if (put.status < 200 || put.status >= 300) return secours(`DRIVE_PUT_${put.status}`);
+
   let driveId: string;
   try {
-    const put = await fetch(start.uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": "application/pdf" },
-      body: file,
-    });
-    if (!put.ok) return secours(`DRIVE_PUT_${put.status}`);
-    const data = (await put.json()) as { id?: string };
+    const data = JSON.parse(put.body) as { id?: string };
     if (!data.id) return secours("DRIVE_NO_ID");
     driveId = data.id;
   } catch {
-    return secours("DRIVE_PUT_FAILED");
+    return secours("DRIVE_NO_ID");
   }
 
+  onProgress?.(null);
   return finalizeMaterial({ courseId, title, driveId });
+}
+
+/**
+ * PUT en XMLHttpRequest plutôt qu'en fetch : c'est le seul moyen d'obtenir
+ * l'avancement réel de l'envoi (xhr.upload.onprogress) pour l'afficher.
+ * Ne rejette jamais : status 0 = échec réseau, traité par l'appelant.
+ */
+function putAvecProgression(
+  url: string,
+  file: File,
+  onProgress: (pct: number) => void
+): Promise<{ status: number; body: string }> {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url, true);
+    xhr.setRequestHeader("Content-Type", "application/pdf");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && e.total > 0) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+    xhr.onload = () => resolve({ status: xhr.status, body: xhr.responseText });
+    xhr.onerror = () => resolve({ status: 0, body: "" });
+    xhr.onabort = () => resolve({ status: 0, body: "" });
+    xhr.send(file);
+  });
 }
 
 export type Material = { id: string; title: string; drive_file_id: string };
@@ -172,8 +205,28 @@ export default function CoursesView({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
+  // null = envoi en cours sans pourcentage connu (phase serveur)
+  const [progress, setProgress] = useState<number | null>(null);
   const [zipping, setZipping] = useState(false);
   const uploadLock = useRef(false);
+
+  // Libellé du bouton pendant l'envoi : « Téléversement en cours 42 % »
+  const uploadingLabel =
+    progress === null ? `${t("uploading")}…` : `${t("uploading")} ${progress}%`;
+
+  // Barre d'avancement affichée sous le formulaire d'envoi.
+  // Appelée en fonction (et non comme composant) pour que la barre ne soit pas
+  // remontée à chaque rendu : la transition de largeur reste fluide.
+  const renderProgressBar = () => (
+    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+      <div
+        className={`h-full rounded-full bg-indigo-600 transition-[width] duration-200 ${
+          progress === null ? "w-1/3 animate-pulse" : ""
+        }`}
+        style={progress === null ? undefined : { width: `${progress}%` }}
+      />
+    </div>
+  );
 
   // Téléchargement direct d'un PDF depuis Google Drive
   function downloadPdf(m: Material) {
@@ -301,13 +354,16 @@ export default function CoursesView({
       // Nouveau cours : téléverser le PDF joint dans la foulée
       const file = formData.get("material_file") as File | null;
       if (!editing && res.id && file && file.size > 0) {
+        setProgress(0);
         setUploading(true);
         const up = await uploadPdfDirect(
           file,
           res.id,
-          (formData.get("material_title") as string) || ""
+          (formData.get("material_title") as string) || "",
+          setProgress
         );
         setUploading(false);
+        setProgress(null);
         if (up.error) {
           alertError(t("uploadFailed"), up.error);
         }
@@ -331,15 +387,17 @@ export default function CoursesView({
   async function handleUpload(formData: FormData) {
     if (uploadLock.current) return; // bloque le double clic
     uploadLock.current = true;
+    setProgress(0);
     setUploading(true);
     const courseId = (formData.get("course_id") as string) || "";
     const title = (formData.get("title") as string) || "";
     const file = formData.get("file") as File | null;
     const res = file
-      ? await uploadPdfDirect(file, courseId, title)
+      ? await uploadPdfDirect(file, courseId, title, setProgress)
       : { error: "NO_FILE" };
     uploadLock.current = false;
     setUploading(false);
+    setProgress(null);
     if (res.error) {
       const key =
         res.error === "NOT_PDF"
@@ -724,8 +782,10 @@ export default function CoursesView({
                       type="file"
                       name="material_file"
                       accept="application/pdf"
-                      className="w-full text-sm text-slate-500 file:me-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:bg-indigo-950 dark:file:text-indigo-300"
+                      disabled={uploading}
+                      className="w-full min-w-0 text-sm text-slate-500 file:me-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 disabled:opacity-50 dark:file:bg-indigo-950 dark:file:text-indigo-300"
                     />
+                    {uploading && renderProgressBar()}
                   </div>
                 </div>
               )}
@@ -757,10 +817,14 @@ export default function CoursesView({
                   <button
                     type="submit"
                     disabled={pending || uploading}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    aria-busy={pending || uploading}
+                    className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
+                    {(pending || uploading) && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
                     {uploading
-                      ? t("uploading")
+                      ? uploadingLabel
                       : pending
                         ? tc("loading")
                         : tc("save")}
@@ -804,9 +868,11 @@ export default function CoursesView({
                 {current.course_materials.map((m) => (
                   <li
                     key={m.id}
-                    className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
+                    className="flex items-center justify-between gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm dark:border-slate-700"
                   >
-                    <span className="truncate">{m.title}</span>
+                    <span className="min-w-0 flex-1 truncate" title={m.title}>
+                      {m.title}
+                    </span>
                     <span className="flex shrink-0 items-center gap-1">
                       <button
                         onClick={() => setViewer(m)}
@@ -838,26 +904,35 @@ export default function CoursesView({
               </ul>
 
               {canManageFiles && (
-                <form action={handleUpload} className="space-y-2">
+                <form action={handleUpload} className="w-full space-y-2">
                   <input type="hidden" name="course_id" value={current.id} />
                   <FloatInput label={t("materialTitle")} name="title" />
-                  <div className="flex items-center gap-2">
+                  {/* min-w-0 : sans lui, un nom de fichier long élargit la ligne
+                      et fait déborder tout le modal horizontalement. */}
+                  <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                     <input
                       type="file"
                       name="file"
                       accept="application/pdf"
                       required
-                      className="flex-1 text-sm text-slate-500 file:me-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 dark:file:bg-indigo-950 dark:file:text-indigo-300"
+                      disabled={uploading}
+                      className="w-full min-w-0 flex-1 text-sm text-slate-500 file:me-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 disabled:opacity-50 dark:file:bg-indigo-950 dark:file:text-indigo-300"
                     />
                     <button
                       type="submit"
                       disabled={uploading}
-                      className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                      aria-busy={uploading}
+                      className="flex shrink-0 items-center justify-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <Upload className="h-4 w-4" />
-                      {uploading ? t("uploading") : t("upload")}
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      {uploading ? uploadingLabel : t("upload")}
                     </button>
                   </div>
+                  {uploading && renderProgressBar()}
                   {!driveReady && (
                     <p className="text-xs text-amber-600">{t("errDriveConfig")}</p>
                   )}

@@ -17,14 +17,14 @@ export default function Modal({
       onClick={onClose}
     >
       <div
-        className="my-auto max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-4 shadow-xl sm:p-6 dark:bg-slate-900"
+        className="my-auto max-h-[90vh] w-full max-w-lg overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl bg-white p-4 shadow-xl sm:p-6 dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{title}</h2>
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <h2 className="min-w-0 truncate text-lg font-semibold">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="shrink-0 rounded-md p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <X className="h-5 w-5" />
           </button>
