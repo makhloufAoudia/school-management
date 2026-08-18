@@ -17,15 +17,28 @@ export async function saveCourse(formData: FormData) {
   const { supabase, userId, role } = await getSessionProfile();
 
   const id = formData.get("id") as string | null;
+  const rawDay = formData.get("day_of_week") as string | null;
   const payload = {
     class_id: formData.get("class_id") as string,
     subject_id: formData.get("subject_id") as string,
     teacher_id: (formData.get("teacher_id") as string) || null,
-    day_of_week: Number(formData.get("day_of_week")),
+    // Jour, heures et dates sont tous facultatifs : un cours peut être
+    // un créneau hebdomadaire, une période (du ... au ...), ou les deux.
+    day_of_week: rawDay === "" || rawDay === null ? null : Number(rawDay),
     start_time: (formData.get("start_time") as string) || null,
     end_time: (formData.get("end_time") as string) || null,
+    start_date: (formData.get("start_date") as string) || null,
+    end_date: (formData.get("end_date") as string) || null,
     room: (formData.get("room") as string) || null,
   };
+
+  if (
+    payload.start_date &&
+    payload.end_date &&
+    payload.end_date < payload.start_date
+  ) {
+    return { error: "ERR_dateOrder", id };
+  }
 
   // L'enseignant crée un cours pour lui-même, dans ses classes uniquement.
   // La RLS reste la garde finale ; ce contrôle évite un aller-retour inutile

@@ -10,7 +10,8 @@
     "add": "Rnu",
     "search": "Nadi",
     "comingSoon": "Aḥric-a ad yettwaseggem deg usurif i d-iteddun.",
-    "close": "Mdel"
+    "close": "Mdel",
+    "actions": "Tigawin"
   },
   "nav": {
     "dashboard": "Tafelwit n usenqed",
@@ -25,7 +26,8 @@
     "users": "Iseqdacen",
     "schools": "Tiɣermiwin",
     "menu": "Umuɣ",
-    "schedule": "Isuteren"
+    "schedule": "Isuteren",
+    "salaries": "Ixelsen-iw"
   },
   "login": {
     "title": "Anekcum",
@@ -67,6 +69,9 @@
     "totalStudents": "Inelmaden",
     "totalTeachers": "Iselmaden",
     "totalClasses": "Ismilen",
+    "myStudents": "Inelmaden-iw",
+    "myClasses": "Ismilen-iw",
+    "myCourses": "Timsirin-iw",
     "monthRevenue": "Idrimen n wayyur",
     "setupNotice": "Supabase ur yettuseggem ara. Nɣel .env.example ɣer .env.local, tserseḍ tisura-inek.",
     "parentChild": "Mmi/Yelli",
@@ -80,7 +85,9 @@
     "platformParents": "Imawlan",
     "platformYearRevenue": "Idrimen n useggas",
     "platformKeyHint": "Akken ad d-banent tsedditin n uḥanu, rnu tasarut SUPABASE_SERVICE_ROLE_KEY deg .env.local, sakin ales asenker n uqeddac.",
-    "openDetail": "Wali talqayt"
+    "openDetail": "Wali talqayt",
+    "adminOnly": "Asebter-a d win n tedbelt n uɣerbaz kan.",
+    "teacherOnly": "Asebter-a d win n yiselmaden kan."
   },
   "classes": {
     "add": "Rnu asmil",
@@ -149,7 +156,10 @@
     "ERR_unknown": "Ur yezmir ara ad yernu amiḍan. Ɛreḍ tikkelt nniḍen.",
     "whatsapp": "Azen s WhatsApp Web",
     "waMessage": "Azul {name}, atan useɣwen n unekcum ɣer tallunt n imawlan. Ldi-t akken ad tferneḍ awal-ik uffir: {link}",
-    "whatsappApp": "Ldi deg usnas WhatsApp"
+    "whatsappApp": "Ldi deg usnas WhatsApp",
+    "paymentDetails": "Talqayt n uxelles",
+    "paymentSeeAll": "Ldi asebter n yixelsen",
+    "paymentNone": "Ulac axelles yettwaklsen i unelmad-a."
   },
   "teachers": {
     "add": "Rnu aselmad",
@@ -237,7 +247,14 @@
     "download": "Sader",
     "downloadAllZip": "Sader akk (.zip)",
     "downloadingZip": "Aheggi n .zip…",
-    "zipEmpty": "Ulac isefka ara d-yettwasedren"
+    "zipEmpty": "Ulac isefka ara d-yettwasedren",
+    "startDate": "Seg (azemz)",
+    "endDate": "Ar (azemz)",
+    "noFixedDay": "Ulla ass ibedden",
+    "fromDate": "Seg",
+    "toDate": "Ar",
+    "periodHint": "D afrayan: mala ulac ass neɣ akud ibedden i tɣuri, sekcem kan tawala (seg … ar …).",
+    "ERR_dateOrder": "Azemz n taggara ur yezmir ad yezwir azemz n tazwara"
   },
   "payments": {
     "add": "Rnu axelliṣ",
@@ -268,6 +285,8 @@
     "due": "Ilaq ad yettwaxelleṣ",
     "paid": "Yettwaxelleṣ",
     "remaining": "I d-yeqqimen",
+    "cumul": "Amaḍal",
+    "cumulHint": "Ayen i d-yeqqimen seg tazwara: ixelsen i d-yettwaxelqen + ayen yettwasran i wesmil + azal usbid (yettwaseddu yiwet n tikkelt), kkes-as ixelsen meṛṛa yettwaklsen.",
     "status": "Addad",
     "status_paid": "Yettwaxelleṣ",
     "status_partial": "S wazgen",
@@ -432,5 +451,33 @@
     "ERR_class_subject_required": "Asmil d tɣawsa d ilzimen.",
     "ERR_not_found": "Ulac asuter-a.",
     "ERR_already_decided": "Asuter-a yettwaseqdec yakan."
+  },
+  "salaries": {
+    "title": "Ixelsen i ttwaxelsen",
+    "myTitle": "Ixelsen-iw",
+    "add": "Rnu axelles",
+    "edit": "Beddel axelles",
+    "teacher": "Aselmad",
+    "allTeachers": "Iselmaden meṛṛa",
+    "allYears": "Iseggasen meṛṛa",
+    "empty": "Ulac axelles yettwaklsen",
+    "deleteConfirm": "Ad tekkseḍ axelles-a?",
+    "print": "Siggez",
+    "receipt": "Tabrat n uxelles",
+    "unauthorized": "Tigawt-a d ayla n tedbelt",
+    "myEmptyTitle": "Ulac axelles ar tura",
+    "myEmptyHelp": "Ixelsen-ik ad d-banen dagi ticki ten-tsekles tedbelt. Imir-en tzemreḍ ad tessigzeḍ tabrat n yal axelles."
+  },
+  "receipt": {
+    "titlePayment": "Tabrat n uxelles",
+    "titleSalary": "Tabrat n uxelles n uselmad",
+    "number": "Uṭṭun",
+    "beneficiary": "Win i d-yeṭṭfen",
+    "amountPaid": "Azal yettwaxelsen",
+    "signature": "Azmul d ṭṭabeɛ",
+    "print": "Siggez",
+    "footer": "Isemli i d-yettwarun s wudem awurman — eḥrez-it.",
+    "notFound": "Ulac tabrat-a.",
+    "short": "Tabrat"
   }
 }

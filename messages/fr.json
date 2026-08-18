@@ -10,7 +10,8 @@
     "add": "Ajouter",
     "search": "Rechercher",
     "comingSoon": "Cette section sera développée dans la prochaine étape.",
-    "close": "Fermer"
+    "close": "Fermer",
+    "actions": "Actions"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -25,7 +26,8 @@
     "users": "Utilisateurs",
     "schools": "Écoles",
     "menu": "Menu",
-    "schedule": "Demandes"
+    "schedule": "Demandes",
+    "salaries": "Mes paiements"
   },
   "login": {
     "title": "Connexion",
@@ -67,6 +69,9 @@
     "totalStudents": "Élèves",
     "totalTeachers": "Enseignants",
     "totalClasses": "Classes",
+    "myStudents": "Mes élèves",
+    "myClasses": "Mes classes",
+    "myCourses": "Mes cours",
     "monthRevenue": "Revenus du mois",
     "setupNotice": "Supabase n'est pas encore configuré. Copiez .env.example vers .env.local et remplissez vos clés.",
     "parentChild": "Mon enfant",
@@ -80,7 +85,9 @@
     "platformParents": "Parents",
     "platformYearRevenue": "Revenus de l'année",
     "platformKeyHint": "Pour afficher les statistiques de la plateforme, ajoutez la clé SUPABASE_SERVICE_ROLE_KEY dans .env.local, puis redémarrez le serveur.",
-    "openDetail": "Voir le détail"
+    "openDetail": "Voir le détail",
+    "adminOnly": "Cette page est réservée à l'administration de l'école.",
+    "teacherOnly": "Cette page est réservée aux enseignants."
   },
   "classes": {
     "add": "Ajouter une classe",
@@ -149,7 +156,10 @@
     "ERR_unknown": "Création impossible. Réessayez.",
     "whatsapp": "Envoyer par WhatsApp Web",
     "waMessage": "Bonjour {name}, voici votre accès à l'espace parent de Gestion Scolaire. Ouvrez ce lien pour choisir votre mot de passe : {link}",
-    "whatsappApp": "Ouvrir dans l'application WhatsApp"
+    "whatsappApp": "Ouvrir dans l'application WhatsApp",
+    "paymentDetails": "Détails de paiement",
+    "paymentSeeAll": "Voir la page Paiements",
+    "paymentNone": "Aucun paiement enregistré pour cet élève."
   },
   "teachers": {
     "add": "Ajouter un enseignant",
@@ -237,7 +247,14 @@
     "download": "Télécharger",
     "downloadAllZip": "Tout télécharger (.zip)",
     "downloadingZip": "Préparation du .zip…",
-    "zipEmpty": "Aucun support à télécharger"
+    "zipEmpty": "Aucun support à télécharger",
+    "startDate": "Du (date)",
+    "endDate": "Au (date)",
+    "noFixedDay": "Aucun jour fixe",
+    "fromDate": "À partir du",
+    "toDate": "Jusqu'au",
+    "periodHint": "Facultatif : si le cours n'a pas de jour ni d'heure fixe, indiquez simplement la période (du … au …).",
+    "ERR_dateOrder": "La date de fin ne peut pas précéder la date de début"
   },
   "payments": {
     "add": "Ajouter un paiement",
@@ -268,6 +285,8 @@
     "due": "Dû",
     "paid": "Payé",
     "remaining": "Reste",
+    "cumul": "Cumul",
+    "cumulHint": "Total restant dû depuis le début : échéances générées + dûs de classe + somme fixe (comptée une seule fois), moins tous les paiements enregistrés.",
     "status": "Statut",
     "status_paid": "Payé",
     "status_partial": "Partiel",
@@ -432,5 +451,33 @@
     "ERR_class_subject_required": "La classe et la matière sont obligatoires.",
     "ERR_not_found": "Demande introuvable.",
     "ERR_already_decided": "Cette demande a déjà été traitée."
+  },
+  "salaries": {
+    "title": "Salaires versés",
+    "myTitle": "Mes paiements",
+    "add": "Ajouter un salaire",
+    "edit": "Modifier le salaire",
+    "teacher": "Enseignant",
+    "allTeachers": "Tous les enseignants",
+    "allYears": "Toutes les années",
+    "empty": "Aucun salaire enregistré",
+    "deleteConfirm": "Supprimer ce salaire ?",
+    "print": "Imprimer",
+    "receipt": "Reçu",
+    "unauthorized": "Action réservée à l'administration",
+    "myEmptyTitle": "Aucun paiement pour le moment",
+    "myEmptyHelp": "Vos salaires apparaîtront ici dès que l'administration les aura enregistrés. Vous pourrez alors imprimer le reçu de chacun."
+  },
+  "receipt": {
+    "titlePayment": "Reçu de paiement",
+    "titleSalary": "Reçu de salaire",
+    "number": "N°",
+    "beneficiary": "Bénéficiaire",
+    "amountPaid": "Montant réglé",
+    "signature": "Signature et cachet",
+    "print": "Imprimer",
+    "footer": "Document généré automatiquement — à conserver.",
+    "notFound": "Reçu introuvable.",
+    "short": "Reçu"
   }
 }

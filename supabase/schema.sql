@@ -110,10 +110,14 @@ create table public.courses (
   class_id uuid not null references classes(id) on delete cascade,
   subject_id uuid not null references subjects(id) on delete cascade,
   teacher_id uuid references teachers(id) on delete set null,
-  day_of_week int check (day_of_week between 0 and 6),  -- 0 = dimanche
+  day_of_week int check (day_of_week between 0 and 6),  -- 0 = dimanche (facultatif)
   start_time time,
   end_time time,
-  room text
+  start_date date,                       -- période du cours : du ...
+  end_date date,                         -- ... au ... (facultatif)
+  room text,
+  constraint courses_dates_order
+    check (start_date is null or end_date is null or end_date >= start_date)
 );
 
 -- ---------- Présences & Notes ----------

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Plus,
   Trash2,
@@ -13,9 +13,11 @@ import {
   Check,
   Unlink,
   MessageCircle,
+  Wallet,
+  Printer,
 } from "lucide-react";
 import Modal from "@/components/modal";
-import { whatsAppLink } from "@/lib/format";
+import { whatsAppLink, formatMoney } from "@/lib/format";
 import { FloatInput, FloatSelect, FloatTextarea } from "@/components/ui/fields";
 import { BusyLabel } from "@/components/ui/busy";
 import { saveStudent, deleteStudent } from "@/lib/actions/students";
@@ -40,6 +42,21 @@ export type StudentRow = {
 
 export type ClassOption = { id: string; name: string };
 
+// Situation financière d'un élève, préparée côté serveur pour la fiche.
+// Fournie uniquement à l'administration (voir students/page.tsx).
+export type StudentPayments = {
+  due: number;
+  paid: number;
+  remaining: number;
+  rows: {
+    id: string;
+    amount: number;
+    type: string;
+    period: string | null;
+    paid_at: string;
+  }[];
+};
+
 const STATUS_STYLES: Record<string, string> = {
   active: "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
   suspended: "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
@@ -54,6 +71,7 @@ export default function StudentsView({
   canManageAccounts = true,
   defaultClassId = "",
   guardians = {},
+  paymentsByStudent = {},
 }: {
   students: StudentRow[];
   classOptions: ClassOption[];
@@ -65,10 +83,14 @@ export default function StudentsView({
   defaultClassId?: string;
   // id du compte parent -> nom complet, pour l'affichage de la fiche
   guardians?: Record<string, string>;
+  // id de l'élève -> sa situation de paiement (administration uniquement)
+  paymentsByStudent?: Record<string, StudentPayments>;
 }) {
   const t = useTranslations("students");
   const tn = useTranslations("nav");
   const tc = useTranslations("common");
+  const tp = useTranslations("payments");
+  const tr = useTranslations("receipt");
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState(defaultClassId);
@@ -409,6 +431,90 @@ export default function StudentsView({
                       })
                     : t("accountHint")}
                 </p>
+              </div>
+            )}
+
+            {editing && paymentsByStudent[editing.id] && (
+              <div className="rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <Wallet className="h-4 w-4 text-indigo-600" />
+                    {t("paymentDetails")}
+                  </span>
+                  <Link
+                    href="/payments"
+                    className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                  >
+                    {t("paymentSeeAll")}
+                  </Link>
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-md bg-slate-50 p-2 dark:bg-slate-800">
+                    <div className="text-[11px] text-slate-500">{tp("due")}</div>
+                    <div className="text-sm font-semibold" dir="ltr">
+                      {formatMoney(paymentsByStudent[editing.id].due)}
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-2 dark:bg-slate-800">
+                    <div className="text-[11px] text-slate-500">{tp("paid")}</div>
+                    <div className="text-sm font-semibold" dir="ltr">
+                      {formatMoney(paymentsByStudent[editing.id].paid)}
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-2 dark:bg-slate-800">
+                    <div className="text-[11px] text-slate-500">
+                      {tp("remaining")}
+                    </div>
+                    <div
+                      className={`text-sm font-semibold ${
+                        paymentsByStudent[editing.id].remaining > 0
+                          ? "text-red-600 dark:text-red-400"
+                          : "text-green-600 dark:text-green-400"
+                      }`}
+                      dir="ltr"
+                    >
+                      {formatMoney(paymentsByStudent[editing.id].remaining)}
+                    </div>
+                  </div>
+                </div>
+
+                {paymentsByStudent[editing.id].rows.length === 0 ? (
+                  <p className="mt-3 text-xs text-slate-500">
+                    {t("paymentNone")}
+                  </p>
+                ) : (
+                  <ul className="mt-3 divide-y divide-slate-100 text-xs dark:divide-slate-800">
+                    {paymentsByStudent[editing.id].rows.slice(0, 6).map((r) => (
+                      <li
+                        key={r.id}
+                        className="flex items-center justify-between gap-2 py-2"
+                      >
+                        <span className="min-w-0 truncate">
+                          <span dir="ltr">{r.paid_at}</span>
+                          <span className="text-slate-400">
+                            {" · "}
+                            {tp(`type_${r.type}`)}
+                            {r.period ? ` · ${r.period}` : ""}
+                          </span>
+                        </span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <span className="font-semibold" dir="ltr">
+                            {formatMoney(r.amount)}
+                          </span>
+                          <Link
+                            href={`/recu/paiement/${r.id}`}
+                            target="_blank"
+                            title={tr("print")}
+                            className="rounded-md border border-slate-300 p-1 text-slate-500 hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </Link>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 

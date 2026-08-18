@@ -22,6 +22,16 @@ export default async function ClassesPage() {
 
   const { supabase, role } = await getSessionProfile();
 
+  // Page réservée à l'administration : un enseignant (ou un parent) qui
+  // taperait l'adresse à la main tombe sur ce message, pas sur la liste.
+  if (role !== "admin") {
+    return (
+      <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        {t("adminOnly")}
+      </div>
+    );
+  }
+
   const isAdmin = role === "admin";
 
   const [{ data: year }, { data: classes }, feeHistoryRes, teachersRes] =

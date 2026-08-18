@@ -10,7 +10,8 @@
     "add": "Add",
     "search": "Search",
     "comingSoon": "This section will be built in the next step.",
-    "close": "Close"
+    "close": "Close",
+    "actions": "Actions"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -25,7 +26,8 @@
     "users": "Users",
     "schools": "Schools",
     "menu": "Menu",
-    "schedule": "Requests"
+    "schedule": "Requests",
+    "salaries": "My payments"
   },
   "login": {
     "title": "Sign in",
@@ -67,6 +69,9 @@
     "totalStudents": "Students",
     "totalTeachers": "Teachers",
     "totalClasses": "Classes",
+    "myStudents": "My students",
+    "myClasses": "My classes",
+    "myCourses": "My courses",
     "monthRevenue": "This month's revenue",
     "setupNotice": "Supabase is not configured yet. Copy .env.example to .env.local and fill in your keys.",
     "parentChild": "My child",
@@ -80,7 +85,9 @@
     "platformParents": "Parents",
     "platformYearRevenue": "This year's revenue",
     "platformKeyHint": "To display platform statistics, add the SUPABASE_SERVICE_ROLE_KEY to .env.local, then restart the server.",
-    "openDetail": "View details"
+    "openDetail": "View details",
+    "adminOnly": "This page is reserved for the school administration.",
+    "teacherOnly": "This page is reserved for teachers."
   },
   "classes": {
     "add": "Add class",
@@ -149,7 +156,10 @@
     "ERR_unknown": "Could not create the account. Please try again.",
     "whatsapp": "Send via WhatsApp Web",
     "waMessage": "Hello {name}, here is your access to the Gestion Scolaire parent area. Open this link to choose your password: {link}",
-    "whatsappApp": "Open in the WhatsApp app"
+    "whatsappApp": "Open in the WhatsApp app",
+    "paymentDetails": "Payment details",
+    "paymentSeeAll": "Open the Payments page",
+    "paymentNone": "No payment recorded for this student."
   },
   "teachers": {
     "add": "Add teacher",
@@ -237,7 +247,14 @@
     "download": "Download",
     "downloadAllZip": "Download all (.zip)",
     "downloadingZip": "Preparing .zip…",
-    "zipEmpty": "No materials to download"
+    "zipEmpty": "No materials to download",
+    "startDate": "From (date)",
+    "endDate": "To (date)",
+    "noFixedDay": "No fixed day",
+    "fromDate": "From",
+    "toDate": "Until",
+    "periodHint": "Optional: if the course has no fixed day or time, just set the period (from … to …).",
+    "ERR_dateOrder": "The end date cannot be before the start date"
   },
   "payments": {
     "add": "Add payment",
@@ -268,6 +285,8 @@
     "due": "Due",
     "paid": "Paid",
     "remaining": "Remaining",
+    "cumul": "Running total",
+    "cumulHint": "Total still owed to date: generated dues + class charges + the fixed amount (counted once), minus every payment recorded.",
     "status": "Status",
     "status_paid": "Paid",
     "status_partial": "Partial",
@@ -432,5 +451,33 @@
     "ERR_class_subject_required": "Class and subject are required.",
     "ERR_not_found": "Request not found.",
     "ERR_already_decided": "This request has already been handled."
+  },
+  "salaries": {
+    "title": "Salaries paid",
+    "myTitle": "My payments",
+    "add": "Add a salary",
+    "edit": "Edit salary",
+    "teacher": "Teacher",
+    "allTeachers": "All teachers",
+    "allYears": "All years",
+    "empty": "No salary recorded",
+    "deleteConfirm": "Delete this salary?",
+    "print": "Print",
+    "receipt": "Receipt",
+    "unauthorized": "Action reserved for the administration",
+    "myEmptyTitle": "No payment yet",
+    "myEmptyHelp": "Your salaries will appear here as soon as the administration records them. You will then be able to print a receipt for each one."
+  },
+  "receipt": {
+    "titlePayment": "Payment receipt",
+    "titleSalary": "Salary receipt",
+    "number": "No.",
+    "beneficiary": "Beneficiary",
+    "amountPaid": "Amount paid",
+    "signature": "Signature and stamp",
+    "print": "Print",
+    "footer": "Automatically generated document — please keep it.",
+    "notFound": "Receipt not found.",
+    "short": "Receipt"
   }
 }

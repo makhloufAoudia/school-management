@@ -10,7 +10,8 @@
     "add": "إضافة",
     "search": "بحث",
     "comingSoon": "سيتم تطوير هذا القسم في الخطوة القادمة.",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "actions": "إجراءات"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -25,7 +26,8 @@
     "users": "المستخدمون",
     "schools": "المدارس",
     "menu": "القائمة",
-    "schedule": "الطلبات"
+    "schedule": "الطلبات",
+    "salaries": "مدفوعاتي"
   },
   "login": {
     "title": "تسجيل الدخول",
@@ -67,6 +69,9 @@
     "totalStudents": "التلاميذ",
     "totalTeachers": "الأساتذة",
     "totalClasses": "الأقسام",
+    "myStudents": "تلاميذي",
+    "myClasses": "أقسامي",
+    "myCourses": "دروسي",
     "monthRevenue": "مداخيل الشهر",
     "setupNotice": "لم يتم إعداد Supabase بعد. انسخ .env.example إلى .env.local وأدخل مفاتيحك.",
     "parentChild": "ابني/ابنتي",
@@ -80,7 +85,9 @@
     "platformParents": "أولياء الأمور",
     "platformYearRevenue": "مداخيل السنة",
     "platformKeyHint": "لعرض إحصائيات المنصة، أضف المفتاح SUPABASE_SERVICE_ROLE_KEY في .env.local ثم أعد تشغيل الخادم.",
-    "openDetail": "عرض التفاصيل"
+    "openDetail": "عرض التفاصيل",
+    "adminOnly": "هذه الصفحة مخصّصة لإدارة المدرسة.",
+    "teacherOnly": "هذه الصفحة مخصّصة للأساتذة."
   },
   "classes": {
     "add": "إضافة قسم",
@@ -149,7 +156,10 @@
     "ERR_unknown": "تعذّر إنشاء الحساب. أعد المحاولة.",
     "whatsapp": "إرسال عبر واتساب ويب",
     "waMessage": "مرحبًا {name}، هذا رابط دخولك إلى فضاء الأولياء. افتحه لاختيار كلمة مرورك: {link}",
-    "whatsappApp": "الفتح في تطبيق واتساب"
+    "whatsappApp": "الفتح في تطبيق واتساب",
+    "paymentDetails": "تفاصيل الدفع",
+    "paymentSeeAll": "فتح صفحة المدفوعات",
+    "paymentNone": "لا يوجد دفع مسجَّل لهذا التلميذ."
   },
   "teachers": {
     "add": "إضافة أستاذ",
@@ -237,7 +247,14 @@
     "download": "تنزيل",
     "downloadAllZip": "تنزيل الكل (‎.zip)",
     "downloadingZip": "جارٍ تحضير ملف .zip…",
-    "zipEmpty": "لا توجد ملفات للتنزيل"
+    "zipEmpty": "لا توجد ملفات للتنزيل",
+    "startDate": "من (تاريخ)",
+    "endDate": "إلى (تاريخ)",
+    "noFixedDay": "بدون يوم محدد",
+    "fromDate": "ابتداءً من",
+    "toDate": "حتى",
+    "periodHint": "اختياري: إذا لم يكن للدرس يوم أو توقيت ثابت، اكتفِ بتحديد الفترة (من … إلى …).",
+    "ERR_dateOrder": "لا يمكن أن يسبق تاريخ النهاية تاريخ البداية"
   },
   "payments": {
     "add": "إضافة دفعة",
@@ -268,6 +285,8 @@
     "due": "المستحق",
     "paid": "المدفوع",
     "remaining": "الباقي",
+    "cumul": "المجموع المتراكم",
+    "cumulHint": "ما تبقّى من البداية: الأقساط المُنشأة + مستحقات القسم + المبلغ الثابت (يُحتسب مرة واحدة)، ناقص كل المدفوعات المسجَّلة.",
     "status": "الحالة",
     "status_paid": "مدفوع",
     "status_partial": "جزئي",
@@ -432,5 +451,33 @@
     "ERR_class_subject_required": "القسم والمادة إجباريان.",
     "ERR_not_found": "الطلب غير موجود.",
     "ERR_already_decided": "تمت معالجة هذا الطلب من قبل."
+  },
+  "salaries": {
+    "title": "الرواتب المدفوعة",
+    "myTitle": "مدفوعاتي",
+    "add": "إضافة راتب",
+    "edit": "تعديل الراتب",
+    "teacher": "الأستاذ",
+    "allTeachers": "كل الأساتذة",
+    "allYears": "كل السنوات",
+    "empty": "لا يوجد راتب مسجَّل",
+    "deleteConfirm": "حذف هذا الراتب؟",
+    "print": "طباعة",
+    "receipt": "وصل",
+    "unauthorized": "إجراء مخصّص للإدارة",
+    "myEmptyTitle": "لا يوجد دفع بعد",
+    "myEmptyHelp": "ستظهر رواتبك هنا بمجرّد أن تسجّلها الإدارة. عندها يمكنك طباعة وصل لكل واحد منها."
+  },
+  "receipt": {
+    "titlePayment": "وصل دفع",
+    "titleSalary": "وصل راتب",
+    "number": "رقم",
+    "beneficiary": "المستفيد",
+    "amountPaid": "المبلغ المدفوع",
+    "signature": "الإمضاء والختم",
+    "print": "طباعة",
+    "footer": "وثيقة مُنشأة آليًا — يُرجى الاحتفاظ بها.",
+    "notFound": "الوصل غير موجود.",
+    "short": "وصل"
   }
 }

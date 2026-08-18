@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   Plus,
   Trash2,
@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CalendarPlus,
   Lock,
+  Printer,
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect, FloatTextarea } from "@/components/ui/fields";
@@ -111,6 +112,7 @@ export default function PaymentsView({
   const t = useTranslations("payments");
   const tn = useTranslations("nav");
   const tc = useTranslations("common");
+  const tr = useTranslations("receipt");
   const router = useRouter();
 
   const currentMonth = new Date().toISOString().slice(0, 7);
@@ -166,6 +168,43 @@ export default function PaymentsView({
     return m;
   }, [generatedDues, duesMonth]);
 
+  // ---------- Cumul : tout ce qui reste dû depuis le début ----------
+  // Somme des échéances générées et des dûs de classe jusqu'au mois affiché
+  // (inclus), moins TOUS les paiements de la même période. La somme fixe de
+  // la classe (extra_fee) est une dette : elle n'est comptée qu'une fois.
+  // Les mois pour lesquels aucune échéance n'a été générée ne comptent pas —
+  // c'est ce qui est réellement dû, pas une estimation.
+  const cumulByStudent = useMemo(() => {
+    const duMap = new Map<string, number>();
+    for (const g of generatedDues) {
+      if (g.period > duesMonth) continue;
+      duMap.set(g.student_id, (duMap.get(g.student_id) ?? 0) + Number(g.amount));
+    }
+    const duParClasse = new Map<string, number>();
+    for (const d of classDues) {
+      if (d.period > duesMonth) continue;
+      duParClasse.set(
+        d.class_id,
+        (duParClasse.get(d.class_id) ?? 0) + Number(d.amount)
+      );
+    }
+    const paye = new Map<string, number>();
+    for (const p of payments) {
+      const periode = p.period ?? p.paid_at.slice(0, 7);
+      if (periode > duesMonth) continue;
+      paye.set(p.student_id, (paye.get(p.student_id) ?? 0) + Number(p.amount));
+    }
+    const res = new Map<string, number>();
+    for (const s of studentOptions) {
+      const attendu =
+        (duMap.get(s.id) ?? 0) +
+        (s.classId ? (duParClasse.get(s.classId) ?? 0) : 0) +
+        s.extraFee;
+      res.set(s.id, Math.max(0, attendu - (paye.get(s.id) ?? 0)));
+    }
+    return res;
+  }, [generatedDues, classDues, payments, studentOptions, duesMonth]);
+
   const dues = useMemo(() => {
     const paidByStudent = new Map<string, number>();
     for (const p of payments) {
@@ -202,6 +241,7 @@ export default function PaymentsView({
           duesExtra,
           paid,
           remaining,
+          cumul: cumulByStudent.get(s.id) ?? 0,
           status:
             remaining <= 0 ? "paid" : paid > 0 ? "partial" : ("unpaid" as const),
         };
@@ -210,7 +250,7 @@ export default function PaymentsView({
       .filter((s) => !classFilter || s.classId === classFilter)
       .filter((s) => !q || s.name.toLowerCase().includes(q))
       .sort((a, b) => b.remaining - a.remaining);
-  }, [payments, studentOptions, monthDues, duesMonth, search, classFilter, frozenByStudent]);
+  }, [payments, studentOptions, monthDues, duesMonth, search, classFilter, frozenByStudent, cumulByStudent]);
 
   // Nombre d'élèves du mois affiché n'ayant pas encore d'échéance générée.
   const ungeneratedCount = useMemo(
@@ -491,13 +531,19 @@ export default function PaymentsView({
                 <th className="px-4 py-3 text-start font-medium">{t("due")}</th>
                 <th className="px-4 py-3 text-start font-medium">{t("paid")}</th>
                 <th className="px-4 py-3 text-start font-medium">{t("remaining")}</th>
+                <th
+                  className="px-4 py-3 text-start font-medium"
+                  title={t("cumulHint")}
+                >
+                  {t("cumul")}
+                </th>
                 <th className="px-4 py-3 text-start font-medium">{t("status")}</th>
               </tr>
             </thead>
             <tbody>
               {dues.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
                     {t("empty")}
                   </td>
                 </tr>
@@ -554,6 +600,16 @@ export default function PaymentsView({
                   >
                     {d.remaining.toLocaleString()}
                   </td>
+                  <td
+                    className={`px-4 py-3 font-semibold ${
+                      d.cumul > d.remaining
+                        ? "text-red-700 dark:text-red-300"
+                        : "text-slate-400"
+                    }`}
+                    dir="ltr"
+                  >
+                    {d.cumul.toLocaleString()}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -585,12 +641,13 @@ export default function PaymentsView({
               <th className="px-4 py-3 text-start font-medium">{t("type")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("period")}</th>
               <th className="px-4 py-3 text-start font-medium">{t("date")}</th>
+              <th className="px-4 py-3 text-end font-medium">{tr("short")}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
                   {t("empty")}
                 </td>
               </tr>
@@ -626,6 +683,22 @@ export default function PaymentsView({
                 </td>
                 <td className="px-4 py-3" dir="ltr">
                   {p.paid_at}
+                </td>
+                <td className="px-4 py-3">
+                  {/* Reçu imprimable. Le clic ne doit pas ouvrir le formulaire
+                      de modification, d'où stopPropagation. */}
+                  <div className="flex justify-end">
+                    <Link
+                      href={`/recu/paiement/${p.id}`}
+                      target="_blank"
+                      onClick={(e) => e.stopPropagation()}
+                      title={tr("print")}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-300"
+                    >
+                      <Printer className="h-3.5 w-3.5" />
+                      {tr("short")}
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}

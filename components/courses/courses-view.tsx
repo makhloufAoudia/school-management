@@ -141,9 +141,11 @@ export type CourseRow = {
   class_id: string;
   subject_id: string;
   teacher_id: string | null;
-  day_of_week: number;
+  day_of_week: number | null;
   start_time: string | null;
   end_time: string | null;
+  start_date: string | null;
+  end_date: string | null;
   room: string | null;
   subjects: { name: string } | null;
   teachers: { first_name: string; last_name: string } | null;
@@ -159,6 +161,19 @@ const DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 function fmtTime(t: string | null) {
   return t ? t.slice(0, 5) : "";
+}
+
+// Les dates arrivent en ISO (yyyy-mm-dd) : c'est aussi ce qu'attend
+// <input type="date">, donc on ne coupe que l'éventuelle partie horaire.
+function fmtDateInput(d: string | null) {
+  return d ? d.slice(0, 10) : "";
+}
+
+// Affichage court et local (jj/mm/aaaa en français) pour les tableaux.
+function fmtDateLabel(d: string | null) {
+  if (!d) return "";
+  const parsed = new Date(d + "T00:00:00");
+  return Number.isNaN(parsed.getTime()) ? d : parsed.toLocaleDateString();
 }
 
 export default function CoursesView({
@@ -312,7 +327,8 @@ export default function CoursesView({
           ? `${c.teachers.last_name} ${c.teachers.first_name}`
           : "";
       case "day":
-        return c.day_of_week;
+        // Les cours sans jour fixe (période seule) partent en fin de liste.
+        return c.day_of_week ?? 99;
       case "room":
         return c.room ?? "";
     }
@@ -365,7 +381,10 @@ export default function CoursesView({
     startTransition(async () => {
       const res = await saveCourse(formData);
       if (res.error) {
-        setError(res.error);
+        // Les erreurs métier remontent sous forme de clé traduisible.
+        setError(
+          res.error === "ERR_dateOrder" ? t("ERR_dateOrder") : res.error
+        );
         return;
       }
 
@@ -459,7 +478,20 @@ export default function CoursesView({
     });
   }
 
-  const dayName = (d: number) => t(`day${d}` as Parameters<typeof t>[0]);
+  const dayName = (d: number | null) =>
+    d === null || d === undefined
+      ? "—"
+      : t(`day${d}` as Parameters<typeof t>[0]);
+
+  // Un cours peut n'avoir qu'une période (du ... au ...) sans créneau hebdo.
+  const periodLabel = (c: CourseRow) => {
+    const from = fmtDateLabel(c.start_date);
+    const to = fmtDateLabel(c.end_date);
+    if (from && to) return `${from} → ${to}`;
+    if (from) return `${t("fromDate")} ${from}`;
+    if (to) return `${t("toDate")} ${to}`;
+    return "";
+  };
 
   const SortHeader = ({ k, label }: { k: SortKey; label: string }) => {
     const active = sort?.key === k;
@@ -616,8 +648,20 @@ export default function CoursesView({
                       : "—"}
                   </td>
                   <td className="px-4 py-3">{dayName(c.day_of_week)}</td>
-                  <td className="px-4 py-3" dir="ltr">
-                    {fmtTime(c.start_time)} – {fmtTime(c.end_time)}
+                  <td className="px-4 py-3">
+                    <span dir="ltr">
+                      {c.start_time || c.end_time
+                        ? `${fmtTime(c.start_time)} – ${fmtTime(c.end_time)}`
+                        : "—"}
+                    </span>
+                    {periodLabel(c) && (
+                      <span
+                        className="mt-0.5 block text-xs text-slate-400"
+                        dir="ltr"
+                      >
+                        {periodLabel(c)}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">{c.room ?? "—"}</td>
                   <td className="px-4 py-3">
@@ -791,9 +835,14 @@ export default function CoursesView({
                 <FloatSelect
                   label={t("day")}
                   name="day_of_week"
-                  required
-                  defaultValue={String(current?.day_of_week ?? 0)}
+                  defaultValue={
+                    current?.day_of_week === null ||
+                    current?.day_of_week === undefined
+                      ? ""
+                      : String(current.day_of_week)
+                  }
                 >
+                  <option value="">{t("noFixedDay")}</option>
                   {DAYS.map((d) => (
                     <option key={d} value={d}>
                       {dayName(d)}
@@ -821,6 +870,25 @@ export default function CoursesView({
                   defaultValue={fmtTime(current?.end_time ?? null)}
                 />
               </div>
+
+              {/* Période du cours : un cours n'est pas forcément lié à un
+                  seul jour ni à une heure précise, il peut courir d'une
+                  date à une autre. Les deux champs sont facultatifs. */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <FloatInput
+                  label={t("startDate")}
+                  type="date"
+                  name="start_date"
+                  defaultValue={fmtDateInput(current?.start_date ?? null)}
+                />
+                <FloatInput
+                  label={t("endDate")}
+                  type="date"
+                  name="end_date"
+                  defaultValue={fmtDateInput(current?.end_date ?? null)}
+                />
+              </div>
+              <p className="-mt-1 text-xs text-slate-400">{t("periodHint")}</p>
 
               {!current && (
                 <div className="rounded-md border border-dashed border-slate-300 p-3 dark:border-slate-600">

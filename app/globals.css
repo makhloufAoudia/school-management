@@ -74,3 +74,20 @@ body {
 .dark .text-indigo-600 {
   color: #93a4fd;
 }
+
+
+/* ============================================================
+   IMPRESSION (reçus, relevés)
+   ------------------------------------------------------------
+   Tout élément marqué .no-print disparaît à l'impression, et la
+   page passe sur fond blanc / texte noir quel que soit le thème.
+   ============================================================ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

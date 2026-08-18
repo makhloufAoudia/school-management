@@ -36,6 +36,7 @@ const NAV = [
   { href: "/schedule", key: "schedule", icon: CalendarClock, roles: ["admin", "teacher"] },
   { href: "/payments", key: "payments", icon: CreditCard, roles: ["admin", "parent"] },
   { href: "/finance", key: "finance", icon: Wallet, roles: ["admin"] },
+  { href: "/salaries", key: "salaries", icon: Wallet, roles: ["teacher"] },
   { href: "/users", key: "users", icon: UsersRound, roles: ["admin"] },
   { href: "/settings", key: "settings", icon: Settings, roles: ["admin", "teacher", "parent"] },
 ] as const;

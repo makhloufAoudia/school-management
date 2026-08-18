@@ -7,6 +7,7 @@ import {
   Users,
   UserCog,
   School,
+  BookOpen,
   CreditCard,
   Building2,
   ShieldCheck,
@@ -228,11 +229,11 @@ export default async function DashboardPage() {
         href: "/students",
       },
       {
+        // Pas de lien : la page « Classes » est réservée à l'administration.
         label: t("parentClass"),
         value: classes.size,
         icon: School,
         accent: "amber",
-        href: "/classes",
       },
       {
         label: t("parentDue"),
@@ -242,8 +243,46 @@ export default async function DashboardPage() {
         href: "/payments",
       },
     ];
+  } else if (role === "teacher") {
+    // ---- Tableau de bord enseignant : uniquement ce qui le concerne ----
+    // Aucune carte « Enseignants » ni « Revenus » : un enseignant ne voit ni
+    // ses collègues ni les finances de l'école. Les compteurs ci-dessous sont
+    // déjà filtrés par la base (RLS) — ils ne comptent que SES classes, SES
+    // élèves et SES cours.
+    const [students, classes, courses] = await Promise.all([
+      supabase
+        .from("students")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active"),
+      supabase.from("classes").select("id", { count: "exact", head: true }),
+      supabase.from("courses").select("id", { count: "exact", head: true }),
+    ]);
+
+    cards = [
+      {
+        label: t("myStudents"),
+        value: students.count ?? 0,
+        icon: Users,
+        accent: "violet",
+        href: "/students",
+      },
+      {
+        // Pas de lien : la page « Classes » est réservée à l'administration.
+        label: t("myClasses"),
+        value: classes.count ?? 0,
+        icon: School,
+        accent: "amber",
+      },
+      {
+        label: t("myCourses"),
+        value: courses.count ?? 0,
+        icon: BookOpen,
+        accent: "indigo",
+        href: "/courses",
+      },
+    ];
   } else {
-    // ---- Tableau de bord admin / enseignant ----
+    // ---- Tableau de bord administration ----
     const month = new Date().toISOString().slice(0, 7); // "2026-07"
     const [students, teachers, classes, payments] = await Promise.all([
       supabase

@@ -1,13 +1,14 @@
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { getTranslations } from "next-intl/server";
-import TeachersView, {
-  type TeacherRow,
-} from "@/components/teachers/teachers-view";
+import MySalariesView from "@/components/salaries/my-salaries-view";
+import type { SalaryRow } from "@/components/finance/salaries-view";
 
 export const dynamic = "force-dynamic";
 
-export default async function TeachersPage() {
+// « Mes paiements » — écran de l'enseignant. Il n'y voit que ses propres
+// salaires : la base filtre pour lui (policy « teacher own salaries »).
+export default async function MySalariesPage() {
   const t = await getTranslations("dashboard");
 
   if (!isSupabaseConfigured()) {
@@ -20,26 +21,19 @@ export default async function TeachersPage() {
 
   const { supabase, role } = await getSessionProfile();
 
-  // Page réservée à l'administration : un enseignant (ou un parent) qui
-  // taperait l'adresse à la main tombe sur ce message, pas sur la liste.
-  if (role !== "admin") {
+  if (role !== "teacher") {
     return (
       <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-        {t("adminOnly")}
+        {t("teacherOnly")}
       </div>
     );
   }
 
-  const { data: teachers } = await supabase
-    .from("teachers")
+  const { data: salaries } = await supabase
+    .from("salary_payments")
     .select("*")
-    .order("last_name")
-    .order("first_name");
+    .order("period", { ascending: false })
+    .order("paid_at", { ascending: false });
 
-  return (
-    <TeachersView
-      teachers={(teachers as TeacherRow[]) ?? []}
-      canEdit={role === "admin"}
-    />
-  );
+  return <MySalariesView salaries={(salaries as SalaryRow[]) ?? []} />;
 }
