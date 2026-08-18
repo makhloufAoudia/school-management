@@ -1,3 +1,11 @@
+> **Adresse unique — état actuel du projet.**
+> L'application vit sur **une seule adresse : <https://maxschool.duckdns.org>**.
+> Il n'y a plus de sous-domaine par école (`el-nour.maxschool...`) : tout le
+> monde se connecte au même endroit, l'école est déduite du compte. Toute
+> autre adresse publique est redirigée automatiquement (voir
+> `ADRESSE-UNIQUE.md`). Les passages ci-dessous qui décrivent des
+> sous-domaines ou un certificat wildcard ne s'appliquent plus.
+
 # Déploiement sur Vercel
 
 Guide pour mettre l'application (multi-écoles, Next.js 15 + Supabase + Google Drive) en ligne sur Vercel.
@@ -28,6 +36,7 @@ Dans le dashboard Vercel : **Settings → Environment Variables**. Ne jamais com
 | `GOOGLE_REFRESH_TOKEN` | **secrète** | obtenu via `/api/google/auth` |
 | `GOOGLE_DRIVE_FOLDER_ID` | — | ID du dossier Drive de destination |
 | `NEXT_PUBLIC_CURRENCY` | publique (option.) | ex : `DA`, `€`, `MAD` — défaut `DA` |
+| `NEXT_PUBLIC_SITE_URL` | publique | l'adresse unique du site : `https://maxschool.duckdns.org` |
 
 Les valeurs actuelles sont dans ton `.env.local` (à ne PAS pousser). Le `GOOGLE_REFRESH_TOKEN` que tu utilises en local reste valable en production (même client OAuth).
 

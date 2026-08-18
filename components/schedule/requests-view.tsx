@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Plus, Check, X, Clock, CalendarClock } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect, FloatTextarea } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import {
   createScheduleRequest,
   approveScheduleRequest,
@@ -69,6 +70,9 @@ export default function RequestsView({
   const [rejecting, setRejecting] = useState<RequestRow | null>(null);
   const [adminNote, setAdminNote] = useState("");
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   const label = (code: string) => (code.startsWith("ERR_") ? t(code) : code);
   const name = (list: Option[], id: string | null) =>
@@ -93,6 +97,7 @@ export default function RequestsView({
   }
 
   function handleCreate(formData: FormData) {
+    setBusy("create");
     startTransition(async () => {
       const res = await createScheduleRequest(formData);
       if (res.error) {
@@ -106,6 +111,7 @@ export default function RequestsView({
   }
 
   function handleApprove(r: RequestRow) {
+    setBusy("approve-" + r.id);
     startTransition(async () => {
       const res = await approveScheduleRequest(r.id);
       if (res.error) setError(res.error);
@@ -114,6 +120,7 @@ export default function RequestsView({
   }
 
   function handleReject() {
+    setBusy("reject");
     if (!rejecting) return;
     const id = rejecting.id;
     startTransition(async () => {
@@ -214,10 +221,12 @@ export default function RequestsView({
                   <button
                     onClick={() => handleApprove(r)}
                     disabled={pending}
-                    className="flex items-center gap-1.5 rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center gap-1.5 rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <Check className="h-4 w-4" />
-                    {t("approve")}
+                    <BusyLabel loading={waiting("approve-" + r.id)} size="sm">
+                      <Check className="h-4 w-4" />
+                      {t("approve")}
+                    </BusyLabel>
                   </button>
                   <button
                     onClick={() => {
@@ -320,9 +329,9 @@ export default function RequestsView({
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("submit")}
+                <BusyLabel loading={waiting("create")}>{t("submit")}</BusyLabel>
               </button>
             </div>
           </form>
@@ -350,9 +359,9 @@ export default function RequestsView({
                 type="button"
                 onClick={handleReject}
                 disabled={pending}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("reject")}
+                <BusyLabel loading={waiting("reject")}>{t("reject")}</BusyLabel>
               </button>
             </div>
           </div>

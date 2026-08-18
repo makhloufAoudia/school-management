@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { createClient } from "@/lib/supabase/client";
 import { alertError, confirmDelete } from "@/lib/swal";
 import {
@@ -54,11 +55,11 @@ export type SchoolRow = { id: string; name: string; slug: string };
 const card =
   "rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900";
 const btnPrimary =
-  "flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50";
+  "flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50";
 const btnSecondary =
   "rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800";
 const btnDelete =
-  "flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950";
+  "flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950";
 
 export default function SettingsView({
   years,
@@ -84,6 +85,11 @@ export default function SettingsView({
   const tc = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
+  // Le changement de mot de passe passe par Supabase, hors transition.
+  const [pwdBusy, setPwdBusy] = useState(false);
 
   // Profil
   const [pwd, setPwd] = useState("");
@@ -137,8 +143,10 @@ export default function SettingsView({
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     setPwdMsg(null);
+    setPwdBusy(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password: pwd });
+    setPwdBusy(false);
     setPwdMsg(error ? "error" : "ok");
     if (!error) setPwd("");
   }
@@ -151,13 +159,14 @@ export default function SettingsView({
       <section className={card}>
         <h2 className="mb-4 font-semibold">{t("profile")}</h2>
         <form
-          action={(fd) =>
+          action={(fd) => {
+            setBusy("profile");
             startTransition(async () => {
               await updateProfileName(fd);
               setNameMsg(true);
               refresh();
-            })
-          }
+            });
+          }}
           className="space-y-3"
         >
           {/* L'e-mail est l'identifiant de connexion : il est affiché ici,
@@ -190,7 +199,7 @@ export default function SettingsView({
           </div>
 
           <button type="submit" disabled={pending} className={btnPrimary}>
-            {tc("save")}
+            <BusyLabel loading={waiting("profile")}>{tc("save")}</BusyLabel>
           </button>
         </form>
         {nameMsg && (
@@ -213,9 +222,11 @@ export default function SettingsView({
               }}
             />
           </div>
-          <button type="submit" className={btnPrimary}>
-            <KeyRound className="h-4 w-4" />
-            {t("changePassword")}
+          <button type="submit" disabled={pwdBusy} className={btnPrimary}>
+            <BusyLabel loading={pwdBusy}>
+              <KeyRound className="h-4 w-4" />
+              {t("changePassword")}
+            </BusyLabel>
           </button>
         </form>
         {pwdMsg === "ok" && (
@@ -233,7 +244,8 @@ export default function SettingsView({
         <section className={card}>
           <h2 className="mb-4 font-semibold">{t("school")}</h2>
           <form
-            action={(fd) =>
+            action={(fd) => {
+              setBusy("school");
               startTransition(async () => {
                 const res = await updateSchool(fd);
                 if (res?.error) {
@@ -242,8 +254,8 @@ export default function SettingsView({
                   setSchoolMsg(true);
                   refresh();
                 }
-              })
-            }
+              });
+            }}
             className="flex items-end gap-3"
           >
             <input type="hidden" name="id" value={school.id} />
@@ -257,7 +269,7 @@ export default function SettingsView({
               />
             </div>
             <button type="submit" disabled={pending} className={btnPrimary}>
-              {tc("save")}
+              <BusyLabel loading={waiting("school")}>{tc("save")}</BusyLabel>
             </button>
           </form>
           <p className="mt-2 text-xs text-slate-400">
@@ -367,6 +379,7 @@ export default function SettingsView({
                 alertError(t("invalidYear"), t("invalidYearHint"));
                 return;
               }
+              setBusy("year");
               startTransition(async () => {
                 await saveYear(fd);
                 setYearModal("closed");
@@ -405,17 +418,20 @@ export default function SettingsView({
               <button
                 type="button"
                 disabled={pending}
-                onClick={() =>
+                onClick={() => {
+                  setBusy("setCurrent");
                   startTransition(async () => {
                     await setCurrentYear(editingYear.id);
                     setYearModal("closed");
                     refresh();
-                  })
-                }
-                className="flex items-center gap-2 rounded-md border border-indigo-200 px-3 py-2 text-sm text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950"
+                  });
+                }}
+                className="flex items-center gap-2 rounded-md border border-indigo-200 px-3 py-2 text-sm text-indigo-600 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-900 dark:text-indigo-400 dark:hover:bg-indigo-950"
               >
-                <Star className="h-4 w-4" />
-                {t("setCurrent")}
+                <BusyLabel loading={waiting("setCurrent")}>
+                  <Star className="h-4 w-4" />
+                  {t("setCurrent")}
+                </BusyLabel>
               </button>
             )}
 
@@ -431,6 +447,7 @@ export default function SettingsView({
                       tc("cancel")
                     );
                     if (!ok) return;
+                    setBusy("deleteYear");
                     startTransition(async () => {
                       await deleteYear(editingYear.id);
                       setYearModal("closed");
@@ -439,8 +456,10 @@ export default function SettingsView({
                   }}
                   className={btnDelete}
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {tc("delete")}
+                  <BusyLabel loading={waiting("deleteYear")}>
+                    <Trash2 className="h-4 w-4" />
+                    {tc("delete")}
+                  </BusyLabel>
                 </button>
               ) : (
                 <span />
@@ -454,7 +473,7 @@ export default function SettingsView({
                   {tc("cancel")}
                 </button>
                 <button type="submit" disabled={pending} className={btnPrimary}>
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("year")}>{tc("save")}</BusyLabel>
                 </button>
               </div>
             </div>
@@ -469,13 +488,14 @@ export default function SettingsView({
           onClose={() => setSubjectModal("closed")}
         >
           <form
-            action={(fd) =>
+            action={(fd) => {
+              setBusy("subject");
               startTransition(async () => {
                 await saveSubject(fd);
                 setSubjectModal("closed");
                 refresh();
-              })
-            }
+              });
+            }}
             className="space-y-3"
           >
             {editingSubject && (
@@ -500,6 +520,7 @@ export default function SettingsView({
                       tc("cancel")
                     );
                     if (!ok) return;
+                    setBusy("deleteSubject");
                     startTransition(async () => {
                       await deleteSubject(editingSubject.id);
                       setSubjectModal("closed");
@@ -508,8 +529,10 @@ export default function SettingsView({
                   }}
                   className={btnDelete}
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {tc("delete")}
+                  <BusyLabel loading={waiting("deleteSubject")}>
+                    <Trash2 className="h-4 w-4" />
+                    {tc("delete")}
+                  </BusyLabel>
                 </button>
               ) : (
                 <span />
@@ -523,7 +546,9 @@ export default function SettingsView({
                   {tc("cancel")}
                 </button>
                 <button type="submit" disabled={pending} className={btnPrimary}>
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("subject")}>
+                    {tc("save")}
+                  </BusyLabel>
                 </button>
               </div>
             </div>

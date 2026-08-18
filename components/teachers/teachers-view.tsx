@@ -17,6 +17,7 @@ import {
 import Modal from "@/components/modal";
 import { whatsAppLink } from "@/lib/format";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { saveTeacher, deleteTeacher } from "@/lib/actions/teachers";
 import {
   createTeacherAccount,
@@ -52,6 +53,9 @@ export default function TeachersView({
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   // Compte de connexion de l'enseignant
   const [accountFor, setAccountFor] = useState<TeacherRow | null>(null);
@@ -77,6 +81,7 @@ export default function TeachersView({
   }
 
   function handleAccount(formData: FormData) {
+    setBusy("account");
     setShareTo({
       name: String(formData.get("full_name") ?? ""),
       phone: String(formData.get("phone") ?? ""),
@@ -97,6 +102,7 @@ export default function TeachersView({
   }
 
   function handleUnlink(x: TeacherRow) {
+    setBusy("unlink");
     if (!confirm(t("accountUnlinkConfirm"))) return;
     startTransition(async () => {
       const res = await unlinkTeacherAccount(x.id);
@@ -143,6 +149,7 @@ export default function TeachersView({
   }
 
   function handleSubmit(formData: FormData) {
+    setBusy("save");
     startTransition(async () => {
       const res = await saveTeacher(formData);
       if (res.error) {
@@ -155,6 +162,7 @@ export default function TeachersView({
   }
 
   function handleDelete(id: string) {
+    setBusy("delete");
     if (!confirm(t("deleteConfirm"))) return;
     startTransition(async () => {
       await deleteTeacher(id);
@@ -345,10 +353,12 @@ export default function TeachersView({
                       type="button"
                       onClick={() => handleUnlink(editing)}
                       disabled={pending}
-                      className="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-800"
+                      className="flex items-center gap-1.5 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-800"
                     >
-                      <Unlink className="h-3.5 w-3.5" />
-                      {t("accountUnlink")}
+                      <BusyLabel loading={waiting("unlink")} size="sm">
+                        <Unlink className="h-3.5 w-3.5" />
+                        {t("accountUnlink")}
+                      </BusyLabel>
                     </button>
                   ) : (
                     <button
@@ -374,10 +384,12 @@ export default function TeachersView({
                   type="button"
                   onClick={() => handleDelete(editing.id)}
                   disabled={pending}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {tc("delete")}
+                  <BusyLabel loading={waiting("delete")}>
+                    <Trash2 className="h-4 w-4" />
+                    {tc("delete")}
+                  </BusyLabel>
                 </button>
               ) : (
                 <span />
@@ -393,9 +405,9 @@ export default function TeachersView({
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("save")}>{tc("save")}</BusyLabel>
                 </button>
               </div>
             </div>
@@ -448,9 +460,11 @@ export default function TeachersView({
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("accountSubmit")}
+                <BusyLabel loading={waiting("account")}>
+                  {t("accountSubmit")}
+                </BusyLabel>
               </button>
             </div>
           </form>

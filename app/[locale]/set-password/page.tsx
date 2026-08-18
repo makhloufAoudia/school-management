@@ -7,6 +7,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { GraduationCap } from "lucide-react";
 
 // Client dédié à cette page : detectSessionInUrl = false pour que NOUS
@@ -185,9 +186,9 @@ export default function SetPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? tc("loading") : t("submit")}
+                <BusyLabel loading={loading}>{t("submit")}</BusyLabel>
               </button>
             </form>
           )}

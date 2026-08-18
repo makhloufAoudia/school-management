@@ -1,3 +1,11 @@
+> **Adresse unique — état actuel du projet.**
+> L'application vit sur **une seule adresse : <https://maxschool.duckdns.org>**.
+> Il n'y a plus de sous-domaine par école (`el-nour.maxschool...`) : tout le
+> monde se connecte au même endroit, l'école est déduite du compte. Toute
+> autre adresse publique est redirigée automatiquement (voir
+> `ADRESSE-UNIQUE.md`). Les passages ci-dessous qui décrivent des
+> sous-domaines ou un certificat wildcard ne s'appliquent plus.
+
 > **Ce document est le plan B.** Il suppose une carte bancaire (Oracle en
 > exige une pour vérifier l'identité). Sans carte, suivez plutôt
 > `VERCEL-DUCKDNS.md`. Gardez ce guide de côté : il redeviendra utile le

@@ -10,6 +10,7 @@ import { assertSchoolMember, assertAnyAccess } from "@/lib/actions/tenant";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { GraduationCap } from "lucide-react";
 
 // Client dédié au « mot de passe oublié ».
@@ -305,9 +306,9 @@ export default function LoginForm({
                 <button
                   type="submit"
                   disabled={resetBusy}
-                  className="mt-4 w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {resetBusy ? tc("loading") : t("resetSubmit")}
+                  <BusyLabel loading={resetBusy}>{t("resetSubmit")}</BusyLabel>
                 </button>
                 <button
                   type="button"
@@ -387,9 +388,9 @@ export default function LoginForm({
                 <button
                   type="submit"
                   disabled={resetBusy}
-                  className="mt-4 w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {resetBusy ? tc("loading") : t("codeSubmit")}
+                  <BusyLabel loading={resetBusy}>{t("codeSubmit")}</BusyLabel>
                 </button>
                 <button
                   type="button"
@@ -503,9 +504,9 @@ export default function LoginForm({
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? tc("loading") : t("submit")}
+              <BusyLabel loading={loading}>{t("submit")}</BusyLabel>
             </button>
 
             {/* Enseignants et parents ne s'inscrivent pas eux-mêmes : leur

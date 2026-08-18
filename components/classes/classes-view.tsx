@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Plus, Trash2, History } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { saveClass, deleteClass } from "@/lib/actions/classes";
 import { CURRENCY, formatMoney } from "@/lib/format";
 
@@ -63,6 +64,9 @@ export default function ClassesView({
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   // Nom du professeur principal, pour l'affichage du tableau.
   const teacherName = (id: string | null) =>
@@ -90,6 +94,7 @@ export default function ClassesView({
   }
 
   function handleSubmit(formData: FormData) {
+    setBusy("save");
     startTransition(async () => {
       const res = await saveClass(formData);
       if (res.error) {
@@ -102,6 +107,7 @@ export default function ClassesView({
   }
 
   function handleDelete(id: string) {
+    setBusy("delete");
     if (!confirm(t("deleteConfirm"))) return;
     startTransition(async () => {
       await deleteClass(id);
@@ -287,10 +293,12 @@ export default function ClassesView({
                   type="button"
                   onClick={() => handleDelete(editing.id)}
                   disabled={pending}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {tc("delete")}
+                  <BusyLabel loading={waiting("delete")}>
+                    <Trash2 className="h-4 w-4" />
+                    {tc("delete")}
+                  </BusyLabel>
                 </button>
               ) : (
                 <span />
@@ -306,9 +314,9 @@ export default function ClassesView({
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("save")}>{tc("save")}</BusyLabel>
                 </button>
               </div>
             </div>

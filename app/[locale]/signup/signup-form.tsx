@@ -6,6 +6,7 @@ import { signUpSchool } from "@/lib/actions/signup";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { FloatInput } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { GraduationCap, CheckCircle2 } from "lucide-react";
 
 // Messages d'erreur (français). L'app est multilingue mais l'inscription
@@ -194,9 +195,9 @@ export default function SignupForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {loading ? "Création…" : "Créer mon école"}
+                <BusyLabel loading={loading}>Créer mon école</BusyLabel>
               </button>
             </div>
 

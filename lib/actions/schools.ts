@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { siteOrigin } from "@/lib/site-url";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -45,26 +45,6 @@ type AdminClient = NonNullable<
   Awaited<ReturnType<typeof requireSuperAdmin>>["admin"]
 >;
 
-async function getRequestHost(): Promise<{ host: string; proto: string }> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3001";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return { host, proto };
-}
-
-// Mode domaine unique : toutes les écoles partagent la même adresse.
-// Le paramètre slug est conservé pour ne pas toucher aux appels existants,
-// et pour pouvoir rebasculer facilement sur des sous-domaines si besoin.
-function schoolOrigin(proto: string, host: string, _slug: string): string {
-  const root = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
-  let apex = host;
-  if (root) {
-    const port = host.includes(":") ? ":" + host.split(":")[1] : "";
-    apex = root + port;
-  }
-  return `${proto}://${apex}`;
-}
-
 // Durée de bannissement utilisée pour un blocage "jusqu'à nouvel ordre"
 // (100 ans). "none" lève le blocage.
 const BAN_FOREVER = "876000h";
@@ -100,8 +80,8 @@ async function uniqueSlug(admin: AdminClient, base: string): Promise<string> {
   return `${base}-${Date.now()}`;
 }
 
-// Invite un admin pour une école : génère le lien d'invitation (vers le
-// sous-domaine de l'école) et rattache le profil (nom, rôle admin, école).
+// Invite un admin pour une école : génère le lien d'invitation (vers
+// l'adresse unique du site) et rattache le profil (nom, rôle admin, école).
 async function inviteAdmin(
   admin: AdminClient,
   schoolId: string,
@@ -109,8 +89,7 @@ async function inviteAdmin(
   email: string,
   full_name: string,
 ): Promise<{ error: string | null; link: string | null }> {
-  const { host, proto } = await getRequestHost();
-  const redirectTo = `${schoolOrigin(proto, host, slug)}/fr/set-password`;
+  const redirectTo = `${await siteOrigin()}/fr/set-password`;
 
   const { data, error: gErr } = await admin.auth.admin.generateLink({
     type: "invite",

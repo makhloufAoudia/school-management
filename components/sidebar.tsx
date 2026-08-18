@@ -21,6 +21,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { BusyLabel } from "@/components/ui/busy";
 import LanguageSwitcher from "./language-switcher";
 import ThemeToggle from "./theme-toggle";
 
@@ -57,6 +58,9 @@ export default function Sidebar({
   // bouton de la barre du haut. À partir de « lg » il redevient une colonne
   // fixe et l'état ci-dessous n'a plus d'effet.
   const [open, setOpen] = useState(false);
+  // Déconnexion : le bouton passe en « Veuillez patienter… » le temps de la
+  // requête Supabase et de la redirection.
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // On referme le tiroir dès qu'on change de page.
   useEffect(() => {
@@ -72,6 +76,8 @@ export default function Sidebar({
   }, [open]);
 
   async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/login");
@@ -163,10 +169,13 @@ export default function Sidebar({
           <div className="truncate text-xs text-slate-500">{userName}</div>
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            disabled={loggingOut}
+            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:hover:bg-red-950"
           >
-            <LogOut className="h-4 w-4" />
-            {t("logout")}
+            <BusyLabel loading={loggingOut}>
+              <LogOut className="h-4 w-4" />
+              {t("logout")}
+            </BusyLabel>
           </button>
         </div>
       </aside>

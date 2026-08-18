@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { siteOrigin } from "@/lib/site-url";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -41,13 +41,6 @@ async function adminSchool(): Promise<string | null> {
   return role === "admin" ? schoolId : null;
 }
 
-async function getOrigin() {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3001";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
-
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
 
 // Crée le compte (ou récupère celui qui existe déjà avec cet e-mail) et
@@ -63,7 +56,7 @@ async function createOrFindUser(
   }
 ): Promise<{ error: string | null; userId: string | null; link: string | null; linked: boolean }> {
   const { email, fullName, phone, role, schoolId } = params;
-  const origin = await getOrigin();
+  const origin = await siteOrigin();
   const redirectTo = `${origin}/fr/set-password`;
 
   // school_id passé dans les métadonnées : le trigger handle_new_user

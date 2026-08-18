@@ -2,6 +2,7 @@
   "common": {
     "appName": "Asefrek n Uɣerbaz",
     "loading": "Asali...",
+    "pleaseWait": "Ttṛajam cwiṭ…",
     "save": "Sekles",
     "cancel": "Sefsex",
     "delete": "Kkes",
@@ -211,6 +212,8 @@
     "listView": "Tabdart",
     "timetableView": "Azemz n tmsirin",
     "empty": "Ulac timsirin ar tura",
+    "noClassTitle": "Ur tesɛiḍ ula d yiwen n usmil",
+    "noClassHelp": "Akken ad ternuḍ tamsirt, ilaq d abrid amezwaru ad tiliḍ deg usmil. D tadbelt n uɣerbaz i ixeddmen aya : ad k-tesbedd d aselmad agejdan n usmil, neɣ ad k-ternu tamsirt tamezwarut s yisem-ik. Imiren, taqeffalt « Rnu tamsirt » ad d-tban dagi weḥd-s.",
     "deleteConfirm": "Kkes tamsirt-a? Ifayluyen PDF yeqqnen ɣur-s ad ttwakksen daɣen.",
     "materials": "Ifayluyen n tmsirt (PDF)",
     "noMaterials": "Ulac ifayluyen i tmsirt-a",

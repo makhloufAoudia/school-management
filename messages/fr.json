@@ -2,6 +2,7 @@
   "common": {
     "appName": "Gestion Scolaire",
     "loading": "Chargement...",
+    "pleaseWait": "Veuillez patienter…",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
@@ -211,6 +212,8 @@
     "listView": "Liste",
     "timetableView": "Emploi du temps",
     "empty": "Aucun cours pour le moment",
+    "noClassTitle": "Vous n'êtes rattaché à aucune classe",
+    "noClassHelp": "Pour ajouter un cours, il faut d'abord être affecté à une classe. C'est l'administration de l'école qui s'en charge : elle vous désigne professeur principal d'une classe, ou crée un premier cours à votre nom. Le bouton « Ajouter un cours » apparaîtra alors ici automatiquement.",
     "deleteConfirm": "Supprimer ce cours ? Ses supports PDF seront aussi supprimés.",
     "materials": "Supports de cours (PDF)",
     "noMaterials": "Aucun support pour ce cours",

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect, FloatTextarea } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { confirmDelete, alertError } from "@/lib/swal";
 import {
   savePayment,
@@ -126,6 +127,9 @@ export default function PaymentsView({
   const [showFeesForm, setShowFeesForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -215,6 +219,7 @@ export default function PaymentsView({
   );
 
   function handleGenerateDues() {
+    setBusy("generate");
     startTransition(async () => {
       const res = await generateMonthlyDues(duesMonth);
       if (res.error) {
@@ -237,6 +242,7 @@ export default function PaymentsView({
   );
 
   function handleSaveFees(formData: FormData) {
+    setBusy("fees");
     startTransition(async () => {
       for (const c of classOptions) {
         const raw = formData.get(`fee_${c.id}`);
@@ -251,6 +257,7 @@ export default function PaymentsView({
   }
 
   async function handleDeleteDue(id: string) {
+    setBusy("deleteDue-" + id);
     const ok = await confirmDelete(t("deleteDueConfirm"), tc("delete"), tc("cancel"));
     if (!ok) return;
     startTransition(async () => {
@@ -275,6 +282,7 @@ export default function PaymentsView({
   }
 
   function handleSubmit(formData: FormData) {
+    setBusy("save");
     startTransition(async () => {
       const res = await savePayment(formData);
       if (res.error) {
@@ -287,6 +295,7 @@ export default function PaymentsView({
   }
 
   async function handleDelete(id: string) {
+    setBusy("delete");
     const ok = await confirmDelete(t("deleteConfirm"), tc("delete"), tc("cancel"));
     if (!ok) return;
     startTransition(async () => {
@@ -419,15 +428,17 @@ export default function PaymentsView({
                   onClick={handleGenerateDues}
                   disabled={pending || ungeneratedCount === 0}
                   title={t("generateDuesHint")}
-                  className="flex items-center gap-2 rounded-md border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                  className="flex items-center gap-2 rounded-md border border-emerald-300 px-3 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950"
                 >
-                  <CalendarPlus className="h-4 w-4" />
-                  {t("generateDues")}
-                  {ungeneratedCount > 0 && (
-                    <span className="rounded-full bg-emerald-100 px-1.5 text-xs text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                      {ungeneratedCount}
-                    </span>
-                  )}
+                  <BusyLabel loading={waiting("generate")}>
+                    <CalendarPlus className="h-4 w-4" />
+                    {t("generateDues")}
+                    {ungeneratedCount > 0 && (
+                      <span className="rounded-full bg-emerald-100 px-1.5 text-xs text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                        {ungeneratedCount}
+                      </span>
+                    )}
+                  </BusyLabel>
                 </button>
               </>
             )}
@@ -458,9 +469,12 @@ export default function PaymentsView({
               {canEdit && (
                 <button
                   onClick={() => handleDeleteDue(d.id)}
-                  className="rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950"
+                  disabled={waiting("deleteDue-" + d.id)}
+                  className="inline-flex items-center gap-1 rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 disabled:cursor-not-allowed dark:hover:bg-red-950"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <BusyLabel loading={waiting("deleteDue-" + d.id)} size="sm">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </BusyLabel>
                 </button>
               )}
             </span>
@@ -653,9 +667,9 @@ export default function PaymentsView({
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : tc("save")}
+                <BusyLabel loading={waiting("fees")}>{tc("save")}</BusyLabel>
               </button>
             </div>
           </form>
@@ -665,15 +679,16 @@ export default function PaymentsView({
       {showDueForm && (
         <Modal title={t("applyDue")} onClose={() => setShowDueForm(false)}>
           <form
-            action={(fd) =>
+            action={(fd) => {
+              setBusy("due");
               startTransition(async () => {
                 const res = await saveClassDue(fd);
                 if (!res.error) {
                   setShowDueForm(false);
                   router.refresh();
                 }
-              })
-            }
+              });
+            }}
             className="space-y-3"
           >
             <FloatSelect label={t("class")} name="class_id" required defaultValue="">
@@ -717,9 +732,9 @@ export default function PaymentsView({
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : tc("save")}
+                <BusyLabel loading={waiting("due")}>{tc("save")}</BusyLabel>
               </button>
             </div>
           </form>
@@ -813,10 +828,12 @@ export default function PaymentsView({
                   type="button"
                   onClick={() => handleDelete(editing.id)}
                   disabled={pending}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {tc("delete")}
+                  <BusyLabel loading={waiting("delete")}>
+                    <Trash2 className="h-4 w-4" />
+                    {tc("delete")}
+                  </BusyLabel>
                 </button>
               ) : (
                 <span />
@@ -832,9 +849,9 @@ export default function PaymentsView({
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("save")}>{tc("save")}</BusyLabel>
                 </button>
               </div>
             </div>

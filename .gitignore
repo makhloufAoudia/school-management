@@ -20,3 +20,6 @@ lib/_synctest.txt
 # Jetons/secrets colles a la main (ne jamais publier)
 jeton-*.txt
 *jeton*.txt
+
+# Fichiers mis de cote avant suppression
+_to_delete/

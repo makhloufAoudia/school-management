@@ -1,11 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
+import { siteOrigin } from "@/lib/site-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // Inscription libre d'une école : un directeur crée son école et son compte
 // admin en une seule étape (aucun passage par Supabase). Chaque inscription
-// génère une nouvelle école isolée (slug = sous-domaine).
+// génère une nouvelle école isolée (le slug sert d'identifiant interne).
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -41,11 +41,7 @@ async function uniqueSlug(admin: AdminClient, base: string): Promise<string> {
 // Construit l'URL de connexion. Mode domaine unique : tout le monde se
 // connecte sur la même adresse, l'école est déduite du compte.
 async function schoolLoginUrl(): Promise<string | null> {
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
-  const proto = h.get("x-forwarded-proto") ?? "https";
-  if (!host) return null;
-  return `${proto}://${host}/fr/login`;
+  return `${await siteOrigin()}/fr/login`;
 }
 
 export async function signUpSchool(formData: FormData): Promise<{
@@ -114,9 +110,8 @@ export async function signUpSchool(formData: FormData): Promise<{
       .eq("id", userId);
   }
 
-  // Mode domaine unique : plus rien à déclarer côté hébergeur.
-  // (lib/vercel-domain.ts reste disponible si vous réactivez un jour les
-  //  sous-domaines par école.)
+  // Adresse unique : plus rien à déclarer côté hébergeur, l'école
+  // se connecte sur la même adresse que tout le monde.
   const loginUrl = await schoolLoginUrl();
   return { error: null, slug, loginUrl };
 }

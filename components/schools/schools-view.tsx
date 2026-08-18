@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { confirmDelete } from "@/lib/swal";
 import {
   createSchool,
@@ -45,11 +46,15 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   // Traduit les clés d'erreur ERR_* renvoyées par le serveur.
   const msg = (e: string) => (e.startsWith("ERR_") ? t(e) : e);
 
   function handleCreateSchool(formData: FormData) {
+    setBusy("createSchool");
     startTransition(async () => {
       const res = await createSchool(formData);
       if (res.error) setError(msg(res.error));
@@ -64,6 +69,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   }
 
   function handleCreateAdmin(formData: FormData) {
+    setBusy("createAdmin");
     if (!adminFor) return;
     startTransition(async () => {
       const res = await createSchoolAdmin(formData);
@@ -79,6 +85,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   }
 
   function handleUpdateAdmin(formData: FormData) {
+    setBusy("updateAdmin");
     startTransition(async () => {
       const res = await updateSchoolAdmin(formData);
       if (res.error) setError(msg(res.error));
@@ -91,6 +98,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   }
 
   function toggleActive(s: SchoolRow) {
+    setBusy("toggleActive");
     startTransition(async () => {
       const res = await setSchoolActive(s.id, !s.is_active);
       if (res.error) setError(msg(res.error));
@@ -102,6 +110,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   }
 
   function handleUpdateName(id: string, name: string) {
+    setBusy("updateName");
     startTransition(async () => {
       const res = await updateSchoolName(id, name);
       if (res.error) setError(msg(res.error));
@@ -114,6 +123,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
   }
 
   async function handleDeleteSchool(s: SchoolRow) {
+    setBusy("deleteSchool");
     const ok = await confirmDelete(
       t("deleteConfirm"),
       tc("delete"),
@@ -133,6 +143,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
 
   // Bloque / débloque un admin : réversible, aucune donnée n'est perdue.
   function toggleAdminBlocked(a: SchoolAdmin) {
+    setBusy("blockAdmin-" + a.id);
     startTransition(async () => {
       const res = await setAdminBlocked(a.id, !a.is_blocked);
       if (res.error) setError(msg(res.error));
@@ -146,6 +157,7 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
 
   // Supprime définitivement le compte d'un admin (l'école reste intacte).
   async function handleDeleteAdmin(a: SchoolAdmin) {
+    setBusy("deleteAdmin-" + a.id);
     const ok = await confirmDelete(
       t("deleteAdminConfirm", { name: a.full_name || a.email }),
       tc("delete"),
@@ -304,9 +316,11 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("create")}
+                <BusyLabel loading={waiting("createSchool")}>
+                  {t("create")}
+                </BusyLabel>
               </button>
             </div>
           </form>
@@ -357,9 +371,11 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                 <button
                   type="submit"
                   disabled={pending}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {pending ? tc("loading") : tc("save")}
+                  <BusyLabel loading={waiting("updateName")}>
+                    {tc("save")}
+                  </BusyLabel>
                 </button>
               </div>
             </form>
@@ -390,9 +406,11 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                   <button
                     type="submit"
                     disabled={pending}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {pending ? tc("loading") : tc("save")}
+                    <BusyLabel loading={waiting("updateAdmin")}>
+                      {tc("save")}
+                    </BusyLabel>
                   </button>
                 </div>
               </form>
@@ -437,17 +455,22 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                           aria-label={
                             a.is_blocked ? t("unblockAdmin") : t("blockAdmin")
                           }
-                          className={`rounded-md p-2 transition-colors disabled:opacity-50 ${
+                          className={`inline-flex items-center rounded-md p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                             a.is_blocked
                               ? "text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
                               : "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950"
                           }`}
                         >
-                          {a.is_blocked ? (
-                            <ShieldCheck className="h-4 w-4" />
-                          ) : (
-                            <Ban className="h-4 w-4" />
-                          )}
+                          <BusyLabel
+                            loading={waiting("blockAdmin-" + a.id)}
+                            iconOnly
+                          >
+                            {a.is_blocked ? (
+                              <ShieldCheck className="h-4 w-4" />
+                            ) : (
+                              <Ban className="h-4 w-4" />
+                            )}
+                          </BusyLabel>
                         </button>
                         <button
                           type="button"
@@ -455,9 +478,14 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                           onClick={() => handleDeleteAdmin(a)}
                           title={t("deleteAdmin")}
                           aria-label={t("deleteAdmin")}
-                          className="rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                          className="inline-flex items-center rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <BusyLabel
+                            loading={waiting("deleteAdmin-" + a.id)}
+                            iconOnly
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </BusyLabel>
                         </button>
                       </span>
                     </li>
@@ -493,12 +521,14 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                     : "border-green-200 text-green-600 hover:bg-green-50 dark:border-green-900 dark:hover:bg-green-950"
                 }`}
               >
-                {detailFor.is_active ? (
-                  <PowerOff className="h-4 w-4" />
-                ) : (
-                  <Power className="h-4 w-4" />
-                )}
-                {detailFor.is_active ? t("deactivate") : t("activate")}
+                <BusyLabel loading={waiting("toggleActive")}>
+                  {detailFor.is_active ? (
+                    <PowerOff className="h-4 w-4" />
+                  ) : (
+                    <Power className="h-4 w-4" />
+                  )}
+                  {detailFor.is_active ? t("deactivate") : t("activate")}
+                </BusyLabel>
               </button>
             </div>
 
@@ -510,9 +540,11 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
                 onClick={() => handleDeleteSchool(detailFor)}
                 title={t("deleteSchool")}
                 aria-label={t("deleteSchool")}
-                className="rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                className="inline-flex items-center rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
               >
-                <Trash2 className="h-5 w-5" />
+                <BusyLabel loading={waiting("deleteSchool")} iconOnly>
+                  <Trash2 className="h-5 w-5" />
+                </BusyLabel>
               </button>
             </div>
           </div>
@@ -544,9 +576,11 @@ export default function SchoolsView({ schools }: { schools: SchoolRow[] }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("create")}
+                <BusyLabel loading={waiting("createAdmin")}>
+                  {t("create")}
+                </BusyLabel>
               </button>
             </div>
           </form>

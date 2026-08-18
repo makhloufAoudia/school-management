@@ -1,3 +1,10 @@
+// ---------------------------------------------------------------------
+// INACTIF EN L'ETAT — mode "adresse unique".
+// NEXT_PUBLIC_ROOT_DOMAIN n'est plus definie : cette fonction renvoie donc
+// toujours null sur https://maxschool.duckdns.org, et personne n'est
+// rattache a un sous-domaine. Le code reste la au cas ou vous voudriez un
+// jour redonner un sous-domaine a chaque ecole (voir ADRESSE-UNIQUE.md).
+// ---------------------------------------------------------------------
 // Extrait le slug d'école depuis l'hôte de la requête (sous-domaine).
 // Exemples (root = "localhost") :
 //   el-nour.localhost:3001 -> "el-nour"

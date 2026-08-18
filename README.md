@@ -43,11 +43,17 @@ Application de gestion d'école privée : élèves, enseignants, classes, cours,
    npm run dev
    ```
 
+## Adresse du site
+
+L'application vit sur **une seule adresse : <https://maxschool.duckdns.org>**
+(pas de sous-domaine par école). Elle est définie par la variable
+`NEXT_PUBLIC_SITE_URL` — voir `ADRESSE-UNIQUE.md`.
+
 ## Déploiement Vercel
 
 1. Pousser le code sur GitHub
 2. Importer le repo sur [vercel.com](https://vercel.com)
-3. Ajouter les variables d'environnement (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+3. Ajouter les variables d'environnement (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`)
 4. Deploy
 
 ## Structure

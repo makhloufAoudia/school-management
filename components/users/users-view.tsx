@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Plus, UserPlus, Shield, Copy, Check, Link2 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { createAppUser, updateAppUserRole, type AppUser } from "@/lib/actions/users";
 
 const ROLES = ["admin", "teacher", "parent"] as const;
@@ -28,8 +29,12 @@ export default function UsersView({ users }: { users: AppUser[] }) {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
 
   function handleCreate(formData: FormData) {
+    setBusy("create");
     startTransition(async () => {
       const res = await createAppUser(formData);
       if (res.error) {
@@ -45,6 +50,7 @@ export default function UsersView({ users }: { users: AppUser[] }) {
   }
 
   function handleRoleChange(formData: FormData) {
+    setBusy("save");
     if (!editing) return;
     const role = formData.get("role") as "admin" | "teacher" | "parent";
     startTransition(async () => {
@@ -168,9 +174,9 @@ export default function UsersView({ users }: { users: AppUser[] }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : t("create")}
+                <BusyLabel loading={waiting("create")}>{t("create")}</BusyLabel>
               </button>
             </div>
           </form>
@@ -246,9 +252,9 @@ export default function UsersView({ users }: { users: AppUser[] }) {
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {pending ? tc("loading") : tc("save")}
+                <BusyLabel loading={waiting("save")}>{tc("save")}</BusyLabel>
               </button>
             </div>
           </form>

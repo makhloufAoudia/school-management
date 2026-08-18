@@ -2,6 +2,7 @@
   "common": {
     "appName": "School Management",
     "loading": "Loading...",
+    "pleaseWait": "Please wait…",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -211,6 +212,8 @@
     "listView": "List",
     "timetableView": "Timetable",
     "empty": "No courses yet",
+    "noClassTitle": "You are not assigned to any class",
+    "noClassHelp": "To add a course, you first need to be assigned to a class. The school administration takes care of this: they make you the head teacher of a class, or create a first course in your name. The “Add course” button will then appear here automatically.",
     "deleteConfirm": "Delete this course? Its PDF materials will also be deleted.",
     "materials": "Course materials (PDF)",
     "noMaterials": "No materials for this course",

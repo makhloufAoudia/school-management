@@ -17,9 +17,11 @@ import {
   ArrowDown,
   ArrowUpDown,
   Loader2,
+  Info,
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect } from "@/components/ui/fields";
+import { BusyLabel } from "@/components/ui/busy";
 import { alertError, confirmDelete } from "@/lib/swal";
 import {
   saveCourse,
@@ -193,6 +195,10 @@ export default function CoursesView({
     role === "admin" ||
     (role === "teacher" && !!myTeacherId && editableClassIds.length > 0);
   const canManageFiles = role === "admin" || role === "teacher";
+  // Un enseignant qui n'est rattaché à aucune classe ne peut pas créer de
+  // cours. Plutôt que de faire disparaître le bouton sans un mot, on lui
+  // explique pourquoi et ce qui doit se passer pour que cela change.
+  const teacherWithoutClass = role === "teacher" && !canCreate;
 
   const [classFilter, setClassFilter] = useState(defaultClassId);
   const [sort, setSort] = useState<{ key: SortKey; dir: "asc" | "desc" } | null>(
@@ -204,15 +210,25 @@ export default function CoursesView({
   const [viewer, setViewer] = useState<Material | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Quel bouton a lancé l'action : lui seul affiche « Veuillez patienter ».
+  const [busy, setBusy] = useState("");
+  const waiting = (action: string) => pending && busy === action;
   const [uploading, setUploading] = useState(false);
   // null = envoi en cours sans pourcentage connu (phase serveur)
   const [progress, setProgress] = useState<number | null>(null);
   const [zipping, setZipping] = useState(false);
+  // Quelle archive est en préparation : seul ce bouton affiche l'attente.
+  const [zipFor, setZipFor] = useState("");
+  const zipWaiting = (params: string) => zipping && zipFor === params;
   const uploadLock = useRef(false);
 
-  // Libellé du bouton pendant l'envoi : « Téléversement en cours 42 % »
+  // Libellé du bouton pendant l'envoi : « Veuillez patienter… 42 % ».
+  // Le pourcentage est conservé après le texte d'attente : il rassure sur le
+  // fait que le téléversement avance vraiment (la barre est juste en dessous).
   const uploadingLabel =
-    progress === null ? `${t("uploading")}…` : `${t("uploading")} ${progress}%`;
+    progress === null
+      ? tc("pleaseWait")
+      : `${tc("pleaseWait")} ${progress}%`;
 
   // Barre d'avancement affichée sous le formulaire d'envoi.
   // Appelée en fonction (et non comme composant) pour que la barre ne soit pas
@@ -239,6 +255,7 @@ export default function CoursesView({
   // Téléchargement d'une archive .zip via l'endpoint serveur
   async function downloadZip(params: string) {
     if (zipping) return;
+    setZipFor(params);
     setZipping(true);
     try {
       const res = await fetch(`/api/courses/materials/zip${params}`);
@@ -344,6 +361,7 @@ export default function CoursesView({
   }
 
   function handleSubmit(formData: FormData) {
+    setBusy("save");
     startTransition(async () => {
       const res = await saveCourse(formData);
       if (res.error) {
@@ -375,6 +393,7 @@ export default function CoursesView({
   }
 
   async function handleDelete(id: string) {
+    setBusy("delete");
     const ok = await confirmDelete(t("deleteConfirm"), tc("delete"), tc("cancel"));
     if (!ok) return;
     startTransition(async () => {
@@ -384,20 +403,32 @@ export default function CoursesView({
     });
   }
 
-  async function handleUpload(formData: FormData) {
-    if (uploadLock.current) return; // bloque le double clic
+  // Renvoie true si l'envoi a réussi (pour vider le formulaire ensuite).
+  async function handleUpload(formData: FormData): Promise<boolean> {
+    if (uploadLock.current) return false; // bloque le double clic
     uploadLock.current = true;
     setProgress(0);
     setUploading(true);
+    // Remet l'interface au repos, quoi qu'il arrive.
+    const auRepos = () => {
+      uploadLock.current = false;
+      setUploading(false);
+      setProgress(null);
+    };
     const courseId = (formData.get("course_id") as string) || "";
     const title = (formData.get("title") as string) || "";
     const file = formData.get("file") as File | null;
-    const res = file
-      ? await uploadPdfDirect(file, courseId, title, setProgress)
-      : { error: "NO_FILE" };
-    uploadLock.current = false;
-    setUploading(false);
-    setProgress(null);
+    let res: { error: string | null };
+    try {
+      res = file
+        ? await uploadPdfDirect(file, courseId, title, setProgress)
+        : { error: "NO_FILE" };
+    } catch (e) {
+      auRepos();
+      alertError(t("uploadFailed"), e instanceof Error ? e.message : String(e));
+      return false;
+    }
+    auRepos();
     if (res.error) {
       const key =
         res.error === "NOT_PDF"
@@ -408,12 +439,14 @@ export default function CoursesView({
               ? "errDriveConfig"
               : null;
       alertError(t("uploadFailed"), key ? t(key) : res.error);
-    } else {
-      router.refresh();
+      return false;
     }
+    router.refresh();
+    return true;
   }
 
   async function handleDeleteMaterial(id: string) {
+    setBusy("deleteMaterial-" + id);
     const ok = await confirmDelete(
       t("deleteMaterialConfirm"),
       tc("delete"),
@@ -478,6 +511,16 @@ export default function CoursesView({
         )}
       </div>
 
+      {teacherWithoutClass && (
+        <div className="mb-6 flex gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+          <Info className="mt-0.5 h-5 w-5 shrink-0" />
+          <div>
+            <p className="font-medium">{t("noClassTitle")}</p>
+            <p className="mt-1 text-sm leading-relaxed">{t("noClassHelp")}</p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <select
           value={classFilter}
@@ -521,10 +564,14 @@ export default function CoursesView({
           <button
             onClick={() => downloadZip(classFilter ? `?classId=${classFilter}` : "")}
             disabled={zipping}
-            className="ms-auto flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="ms-auto flex items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            <Archive className="h-4 w-4" />
-            {zipping ? t("downloadingZip") : t("downloadAllZip")}
+            <BusyLabel
+              loading={zipWaiting(classFilter ? `?classId=${classFilter}` : "")}
+            >
+              <Archive className="h-4 w-4" />
+              {t("downloadAllZip")}
+            </BusyLabel>
           </button>
         )}
       </div>
@@ -597,10 +644,15 @@ export default function CoursesView({
                                 : downloadZip(`?course=${c.id}`);
                             }}
                             disabled={zipping}
-                            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
+                            className="inline-flex items-center rounded-md p-1 text-slate-500 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
                             title={t("download")}
                           >
-                            <Download className="h-4 w-4" />
+                            <BusyLabel
+                              loading={zipWaiting(`?course=${c.id}`)}
+                              iconOnly
+                            >
+                              <Download className="h-4 w-4" />
+                            </BusyLabel>
                           </button>
                         )}
                         <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
@@ -798,10 +850,12 @@ export default function CoursesView({
                     type="button"
                     onClick={() => handleDelete(current.id)}
                     disabled={pending}
-                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                   >
-                    <Trash2 className="h-4 w-4" />
-                    {tc("delete")}
+                    <BusyLabel loading={waiting("delete")}>
+                      <Trash2 className="h-4 w-4" />
+                      {tc("delete")}
+                    </BusyLabel>
                   </button>
                 ) : (
                   <span />
@@ -820,14 +874,14 @@ export default function CoursesView({
                     aria-busy={pending || uploading}
                     className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {(pending || uploading) && (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                    {uploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {uploadingLabel}
+                      </>
+                    ) : (
+                      <BusyLabel loading={pending}>{tc("save")}</BusyLabel>
                     )}
-                    {uploading
-                      ? uploadingLabel
-                      : pending
-                        ? tc("loading")
-                        : tc("save")}
                   </button>
                 </div>
               </div>
@@ -853,10 +907,15 @@ export default function CoursesView({
                     type="button"
                     onClick={() => downloadZip(`?course=${current.id}`)}
                     disabled={zipping}
-                    className="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="flex items-center gap-1.5 rounded-md border border-slate-300 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
-                    <Archive className="h-3.5 w-3.5" />
-                    {zipping ? t("downloadingZip") : t("downloadAllZip")}
+                    <BusyLabel
+                      loading={zipWaiting(`?course=${current.id}`)}
+                      size="sm"
+                    >
+                      <Archive className="h-3.5 w-3.5" />
+                      {t("downloadAllZip")}
+                    </BusyLabel>
                   </button>
                 )}
               </div>
@@ -893,9 +952,16 @@ export default function CoursesView({
                       {canManageFiles && (
                         <button
                           onClick={() => handleDeleteMaterial(m.id)}
-                          className="rounded-md p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                          disabled={waiting("deleteMaterial-" + m.id)}
+                          title={tc("delete")}
+                          className="inline-flex items-center rounded-md p-1.5 text-red-500 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <BusyLabel
+                            loading={waiting("deleteMaterial-" + m.id)}
+                            iconOnly
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </BusyLabel>
                         </button>
                       )}
                     </span>
@@ -904,7 +970,24 @@ export default function CoursesView({
               </ul>
 
               {canManageFiles && (
-                <form action={handleUpload} className="w-full space-y-2">
+                <form
+                  // onSubmit et non `action={handleUpload}` : avec `action`,
+                  // React exécute la fonction dans une transition, et le
+                  // passage à « Veuillez patienter » n'était jamais peint
+                  // (aucun useTransition ici ne force le rendu). En onSubmit,
+                  // setUploading est une mise à jour urgente : le bouton
+                  // change dès le clic.
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget;
+                    void handleUpload(new FormData(form)).then((ok) => {
+                      // Succès : on vide le champ fichier, comme le faisait
+                      // la remise à zéro automatique de `action`.
+                      if (ok) form.reset();
+                    });
+                  }}
+                  className="w-full space-y-2"
+                >
                   <input type="hidden" name="course_id" value={current.id} />
                   <FloatInput label={t("materialTitle")} name="title" />
                   {/* min-w-0 : sans lui, un nom de fichier long élargit la ligne
@@ -925,14 +1008,25 @@ export default function CoursesView({
                       className="flex shrink-0 items-center justify-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {uploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          {uploadingLabel}
+                        </>
                       ) : (
-                        <Upload className="h-4 w-4" />
+                        <>
+                          <Upload className="h-4 w-4" />
+                          {t("upload")}
+                        </>
                       )}
-                      {uploading ? uploadingLabel : t("upload")}
                     </button>
                   </div>
                   {uploading && renderProgressBar()}
+                  {/* DIAGNOSTIC TEMPORAIRE — à retirer une fois la cause
+                      identifiée. Montre l'état réel de l'envoi. */}
+                  <p className="text-[11px] text-slate-400">
+                    diag v3 · envoi={String(uploading)} · progression=
+                    {String(progress)}
+                  </p>
                   {!driveReady && (
                     <p className="text-xs text-amber-600">{t("errDriveConfig")}</p>
                   )}
