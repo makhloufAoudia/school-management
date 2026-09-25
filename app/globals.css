@@ -91,3 +91,14 @@ body {
     color: #000 !important;
   }
 }
+
+/* Pas de flèches (spinners) dans les champs numériques, partout. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
