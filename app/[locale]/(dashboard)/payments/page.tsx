@@ -3,11 +3,16 @@ import { getSessionProfile } from "@/lib/supabase/profile";
 import { getTranslations } from "next-intl/server";
 import PaymentsView, {
   type PaymentRow,
-  type StudentOption,
-  type ClassDue,
+  type StudentFees,
   type ClassOption,
-  type GeneratedDue,
 } from "@/components/payments/payments-view";
+import ParentPaymentsView from "@/components/payments/parent-payments-view";
+import {
+  buildAccounts,
+  currentPeriod,
+  STUDENT_FEE_SELECT,
+  type StudentFeeRow,
+} from "@/lib/dues";
 
 export const dynamic = "force-dynamic";
 
@@ -23,62 +28,60 @@ export default async function PaymentsPage() {
   }
 
   const { supabase, role } = await getSessionProfile();
+  const isParent = role === "parent";
 
-  const [
-    { data: payments },
-    { data: students },
-    { data: classDues },
-    { data: classes },
-    { data: generatedDues },
-  ] = await Promise.all([
-    supabase
-      .from("payments")
-      .select("*, students(first_name, last_name, class_id, classes(name))")
-      .order("paid_at", { ascending: false })
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("students")
-      .select("id, first_name, last_name, class_id, classes(name, monthly_fee, extra_fee)")
-      .eq("status", "active")
-      .order("last_name"),
-    supabase
-      .from("class_dues")
-      .select("*, classes(name)")
-      .order("created_at", { ascending: false }),
-    supabase.from("classes").select("id, name, extra_fee").order("name"),
-    supabase
-      .from("monthly_dues")
-      .select("student_id, period, amount"),
-  ]);
+  // La sécurité de la base (RLS) filtre déjà : un parent ne reçoit que
+  // ses enfants et leurs paiements, l'admin toute son école.
+  let studentsQuery = supabase
+    .from("students")
+    .select(STUDENT_FEE_SELECT)
+    .order("last_name");
+  if (!isParent) studentsQuery = studentsQuery.eq("status", "active");
 
-  const studentOptions: StudentOption[] = (students ?? []).map((s) => {
-    const cls = s.classes as unknown as {
-      name: string;
-      monthly_fee: number;
-      extra_fee: number;
-    } | null;
-    return {
-      id: s.id,
-      classId: s.class_id,
-      name: `${s.last_name} ${s.first_name}${cls ? ` — ${cls.name}` : ""}`,
-      className: cls?.name ?? null,
-      monthlyFee: Number(cls?.monthly_fee ?? 0),
-      extraFee: Number(cls?.extra_fee ?? 0),
-    };
-  });
+  const [{ data: payments }, { data: students }, { data: frozen }, { data: classes }] =
+    await Promise.all([
+      supabase
+        .from("payments")
+        .select("*, students(first_name, last_name, class_id, classes(name))")
+        .order("paid_at", { ascending: false })
+        .order("created_at", { ascending: false }),
+      studentsQuery,
+      supabase.from("monthly_dues").select("student_id, period, amount"),
+      isParent
+        ? Promise.resolve({ data: [] as ClassOption[] })
+        : supabase.from("classes").select("id, name").order("name"),
+    ]);
 
-  const defaultClassId =
-    role === "parent" ? ((classes as ClassOption[] | null)?.[0]?.id ?? "") : "";
+  const rows = (students ?? []) as unknown as StudentFeeRow[];
+  const pays = (payments as PaymentRow[]) ?? [];
+  const today = currentPeriod();
+  const accounts = buildAccounts(rows, pays, frozen ?? [], today);
+
+  const studentFees: StudentFees[] = rows.map((s) => ({
+    id: s.id,
+    name: `${s.last_name} ${s.first_name}`,
+    classId: s.class_id,
+    className: s.classes?.name ?? null,
+    account: accounts.get(s.id)!,
+  }));
+
+  if (isParent) {
+    return (
+      <ParentPaymentsView
+        students={studentFees}
+        payments={pays}
+        today={today}
+      />
+    );
+  }
 
   return (
     <PaymentsView
-      payments={(payments as PaymentRow[]) ?? []}
-      studentOptions={studentOptions}
-      classDues={(classDues as ClassDue[]) ?? []}
+      payments={pays}
+      students={studentFees}
       classOptions={(classes as ClassOption[]) ?? []}
-      generatedDues={(generatedDues as GeneratedDue[]) ?? []}
       canEdit={role === "admin"}
-      defaultClassId={defaultClassId}
+      today={today}
     />
   );
 }

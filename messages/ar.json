@@ -280,7 +280,7 @@
     "method_card": "بطاقة",
     "empty": "لم يتم العثور على مدفوعات",
     "deleteConfirm": "حذف هذه الدفعة؟",
-    "listView": "المدفوعات",
+    "listView": "السجل",
     "duesView": "المستحقات",
     "due": "المستحق",
     "paid": "المدفوع",
@@ -306,7 +306,32 @@
     "generateDues": "توليد الأقساط",
     "generateDuesHint": "ينشئ قسطًا شهريًا (برسوم مثبتة) لكل تلميذ ليس له قسط هذا الشهر.",
     "dueFrozen": "قسط مُولَّد (رسوم مثبتة)",
-    "ERR_periodRequired": "الفترة مطلوبة"
+    "ERR_periodRequired": "الفترة مطلوبة",
+    "collect": "تحصيل",
+    "monthsView": "الأقساط الشهرية",
+    "searchStudent": "البحث عن تلميذ",
+    "allClasses": "كل الأقسام",
+    "expectedMonth": "المستحق هذا الشهر",
+    "collectedMonth": "المحصّل هذا الشهر",
+    "remainingMonth": "المتبقي هذا الشهر",
+    "arrearsTotal": "مجموع غير المدفوع حتى اليوم",
+    "monthlyFee": "القسط الشهري",
+    "remainingToDate": "المتبقي للدفع",
+    "remainingToDateHint": "كل الأشهر المنقضية من السنة الدراسية ناقص المدفوعات",
+    "status_upcoming": "قادم",
+    "notEnrolled": "غير مسجل هذا الشهر",
+    "savedTitle": "تم تسجيل الدفع",
+    "printSlip": "طباعة الوصل",
+    "pickMonthHint": "اضغط على شهر لتحصيله.",
+    "saveAndPrint": "تحصيل",
+    "ERR_studentRequired": "اختر تلميذا.",
+    "ERR_amountInvalid": "يجب أن يكون المبلغ أكبر من 0.",
+    "noFee": "لم يُحدَّد قسط شهري لهذا القسم.",
+    "noChild": "لا يوجد طفل مرتبط بحسابك. اتصل بالإدارة.",
+    "upToDate": "مسدَّد",
+    "thisMonth": "هذا الشهر",
+    "paidThisYear": "المدفوع هذه السنة",
+    "history": "الدفعات"
   },
   "settings": {
     "profile": "ملفي الشخصي",
@@ -478,6 +503,9 @@
     "print": "طباعة",
     "footer": "وثيقة مُنشأة آليًا — يُرجى الاحتفاظ بها.",
     "notFound": "الوصل غير موجود.",
-    "short": "وصل"
+    "short": "وصل",
+    "remainingMonth": "المتبقي لهذا الشهر",
+    "remainingTotal": "المتبقي للدفع (حتى اليوم)",
+    "monthSettled": "الشهر مسدَّد"
   }
 }

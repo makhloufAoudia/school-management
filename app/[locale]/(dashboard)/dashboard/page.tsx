@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getSessionProfile } from "@/lib/supabase/profile";
 import { getPlatformStats } from "@/lib/actions/platform";
+import { buildAccounts, STUDENT_FEE_SELECT, type StudentFeeRow } from "@/lib/dues";
 import {
   Users,
   UserCog,
@@ -71,19 +72,6 @@ type Card = {
   // on ne renvoie jamais vers un écran qui serait vide pour ce profil.
   href?: string;
 };
-
-// Nombre de mois (inclus) entre le mois d'inscription et le mois courant.
-function monthsSince(enrollment: string | null): number {
-  if (!enrollment) return 1;
-  const d = new Date(enrollment);
-  if (isNaN(d.getTime())) return 1;
-  const now = new Date();
-  const n =
-    (now.getFullYear() - d.getFullYear()) * 12 +
-    (now.getMonth() - d.getMonth()) +
-    1;
-  return Math.max(1, n);
-}
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
@@ -179,45 +167,21 @@ export default async function DashboardPage() {
     ];
   } else if (role === "parent") {
     // ---- Tableau de bord parent : enfant(s), classe, total dû restant ----
-    const [{ data: children }, { data: classDues }, { data: payments }] =
+    // Même calcul que la page Paiements (lib/dues.ts).
+    const [{ data: children }, { data: payments }, { data: frozen }] =
       await Promise.all([
-        supabase
-          .from("students")
-          .select("id, class_id, enrollment_date, classes(monthly_fee, extra_fee)"),
-        supabase.from("class_dues").select("class_id, amount"),
-        supabase.from("payments").select("student_id, amount"),
+        supabase.from("students").select(STUDENT_FEE_SELECT),
+        supabase.from("payments").select("student_id, amount, type, period, paid_at"),
+        supabase.from("monthly_dues").select("student_id, period, amount"),
       ]);
 
-    const kids = children ?? [];
-    const duesByClass = new Map<string, number>();
-    for (const d of classDues ?? []) {
-      duesByClass.set(
-        d.class_id,
-        (duesByClass.get(d.class_id) ?? 0) + Number(d.amount)
-      );
-    }
-    const paidByStudent = new Map<string, number>();
-    for (const p of payments ?? []) {
-      paidByStudent.set(
-        p.student_id,
-        (paidByStudent.get(p.student_id) ?? 0) + Number(p.amount)
-      );
-    }
-
+    const kids = (children ?? []) as unknown as StudentFeeRow[];
+    const accounts = buildAccounts(kids, payments ?? [], frozen ?? []);
     let due = 0;
     const classes = new Set<string>();
     for (const s of kids) {
-      const cls = s.classes as unknown as {
-        monthly_fee: number;
-        extra_fee: number;
-      } | null;
       if (s.class_id) classes.add(s.class_id);
-      const monthly = Number(cls?.monthly_fee ?? 0) + Number(cls?.extra_fee ?? 0);
-      const expected =
-        monthly * monthsSince(s.enrollment_date) +
-        (s.class_id ? (duesByClass.get(s.class_id) ?? 0) : 0);
-      const paid = paidByStudent.get(s.id) ?? 0;
-      due += Math.max(0, expected - paid);
+      due += accounts.get(s.id)?.remaining ?? 0;
     }
 
     cards = [

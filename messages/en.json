@@ -280,7 +280,7 @@
     "method_card": "Card",
     "empty": "No payments found",
     "deleteConfirm": "Delete this payment?",
-    "listView": "Payments",
+    "listView": "History",
     "duesView": "Outstanding",
     "due": "Due",
     "paid": "Paid",
@@ -306,7 +306,32 @@
     "generateDues": "Generate dues",
     "generateDuesHint": "Creates a monthly due (frozen fee) for each student without one this month.",
     "dueFrozen": "Generated due (frozen fee)",
-    "ERR_periodRequired": "Period required"
+    "ERR_periodRequired": "Period required",
+    "collect": "Collect payment",
+    "monthsView": "Monthly fees",
+    "searchStudent": "Search a student",
+    "allClasses": "All classes",
+    "expectedMonth": "Expected this month",
+    "collectedMonth": "Collected this month",
+    "remainingMonth": "Left this month",
+    "arrearsTotal": "Total unpaid to date",
+    "monthlyFee": "Monthly fee",
+    "remainingToDate": "Balance due",
+    "remainingToDateHint": "All elapsed months of the school year, minus payments",
+    "status_upcoming": "Upcoming",
+    "notEnrolled": "Not enrolled this month",
+    "savedTitle": "Payment recorded",
+    "printSlip": "Print slip",
+    "pickMonthHint": "Tap a month to collect it.",
+    "saveAndPrint": "Collect",
+    "ERR_studentRequired": "Choose a student.",
+    "ERR_amountInvalid": "Amount must be greater than 0.",
+    "noFee": "No monthly fee set for this class.",
+    "noChild": "No child linked to your account. Please contact the school.",
+    "upToDate": "Up to date",
+    "thisMonth": "This month",
+    "paidThisYear": "Paid this year",
+    "history": "Payments"
   },
   "settings": {
     "profile": "My profile",
@@ -478,6 +503,9 @@
     "print": "Print",
     "footer": "Automatically generated document — please keep it.",
     "notFound": "Receipt not found.",
-    "short": "Receipt"
+    "short": "Receipt",
+    "remainingMonth": "Left to pay for this month",
+    "remainingTotal": "Balance due (to date)",
+    "monthSettled": "Month settled"
   }
 }

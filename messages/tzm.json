@@ -280,7 +280,7 @@
     "method_card": "Takarḍa",
     "empty": "Ulac ixelliṣen",
     "deleteConfirm": "Kkes axelliṣ-a?",
-    "listView": "Ixelliṣen",
+    "listView": "Amazray",
     "duesView": "Ur xelṣen ara",
     "due": "Ilaq ad yettwaxelleṣ",
     "paid": "Yettwaxelleṣ",
@@ -306,7 +306,32 @@
     "generateDues": "Sifeɣ ixelliṣen",
     "generateDuesHint": "Yesnulfu-d axelliṣ n wayyur (azal yeqqnen) i yal anelmad ur nesɛi ara axelliṣ deg wayyur-a.",
     "dueFrozen": "Axelliṣ yettwasnulfa (azal yeqqnen)",
-    "ERR_periodRequired": "Tallit tettwasra"
+    "ERR_periodRequired": "Tallit tettwasra",
+    "collect": "Ṭṭef axelliṣ",
+    "monthsView": "Ixelliṣen n wayyur",
+    "searchStudent": "Nadi anelmad",
+    "allClasses": "Akk tineɣrufin",
+    "expectedMonth": "Ayen yettwarjan ayyur-a",
+    "collectedMonth": "Ayen yettwaṭṭfen ayyur-a",
+    "remainingMonth": "I d-yeqqimen ayyur-a",
+    "arrearsTotal": "Akk ayen ur yettwaxelleṣ ara ar ass-a",
+    "monthlyFee": "Axelliṣ n wayyur",
+    "remainingToDate": "I d-yeqqimen i uxelleṣ",
+    "remainingToDateHint": "Akk ayyuren i iεeddan seg useggas n uɣerbaz, ma ulac ixelliṣen",
+    "status_upcoming": "Ad d-yas",
+    "notEnrolled": "Ur yettwajerred ara ayyur-a",
+    "savedTitle": "Axelliṣ yettwasekles",
+    "printSlip": "Siggez awṣil",
+    "pickMonthHint": "Sit ɣef wayyur i tebɣiḍ ad t-teṭṭfeḍ.",
+    "saveAndPrint": "Ṭṭef",
+    "ERR_studentRequired": "Fren anelmad.",
+    "ERR_amountInvalid": "Azal ilaq ad yili ugar n 0.",
+    "noFee": "Ulac axelliṣ n wayyur i tneɣruft-a.",
+    "noChild": "Ulac aqcic yeqqnen ɣer umiḍan-ik. Nermes tadbelt.",
+    "upToDate": "Yettwaxelleṣ akk",
+    "thisMonth": "Ayyur-a",
+    "paidThisYear": "Ayen yettwaxelsen aseggas-a",
+    "history": "Ixelliṣen"
   },
   "settings": {
     "profile": "Amaɣnu-inu",
@@ -478,6 +503,9 @@
     "print": "Siggez",
     "footer": "Isemli i d-yettwarun s wudem awurman — eḥrez-it.",
     "notFound": "Ulac tabrat-a.",
-    "short": "Tabrat"
+    "short": "Tabrat",
+    "remainingMonth": "I d-yeqqimen i wayyur-a",
+    "remainingTotal": "I d-yeqqimen i uxelleṣ (ar ass-a)",
+    "monthSettled": "Ayyur yettwaxelleṣ"
   }
 }

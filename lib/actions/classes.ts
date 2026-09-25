@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentPeriod, schoolYearBounds } from "@/lib/dues";
+import { freezeClassPastMonths } from "@/lib/actions/payments";
 
 export async function saveClass(formData: FormData) {
   const supabase = await createClient();
@@ -49,6 +51,16 @@ export async function saveClass(formData: FormData) {
     ({ error } = await supabase.from("classes").update(payload).eq("id", id));
 
     if (!error && prev && Number(prev.monthly_fee) !== monthly_fee) {
+      // Les mois déjà écoulés gardent l'ancien tarif.
+      const { data: year } = await supabase
+        .from("academic_years")
+        .select("start_date, end_date")
+        .eq("id", payload.academic_year_id)
+        .maybeSingle();
+      const today = currentPeriod();
+      const { from } = schoolYearBounds(year?.start_date, year?.end_date, today);
+      await freezeClassPastMonths(id, Number(prev.monthly_fee), from, today);
+
       await supabase.from("class_fee_history").insert({
         class_id: id,
         old_fee: Number(prev.monthly_fee),

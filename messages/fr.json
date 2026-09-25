@@ -280,7 +280,7 @@
     "method_card": "Carte",
     "empty": "Aucun paiement trouvé",
     "deleteConfirm": "Supprimer ce paiement ?",
-    "listView": "Paiements",
+    "listView": "Historique",
     "duesView": "Impayés",
     "due": "Dû",
     "paid": "Payé",
@@ -306,7 +306,32 @@
     "generateDues": "Générer les échéances",
     "generateDuesHint": "Crée une échéance mensuelle (tarif figé) pour chaque élève sans échéance ce mois-ci.",
     "dueFrozen": "Échéance générée (tarif figé)",
-    "ERR_periodRequired": "Période obligatoire"
+    "ERR_periodRequired": "Période obligatoire",
+    "collect": "Encaisser",
+    "monthsView": "Mensualités",
+    "searchStudent": "Rechercher un élève",
+    "allClasses": "Toutes les classes",
+    "expectedMonth": "Attendu ce mois",
+    "collectedMonth": "Encaissé ce mois",
+    "remainingMonth": "Reste ce mois",
+    "arrearsTotal": "Total impayé à ce jour",
+    "monthlyFee": "Mensualité",
+    "remainingToDate": "Reste à payer",
+    "remainingToDateHint": "Tous les mois écoulés de l'année scolaire, moins les versements",
+    "status_upcoming": "À venir",
+    "notEnrolled": "Non inscrit ce mois",
+    "savedTitle": "Paiement enregistré",
+    "printSlip": "Imprimer le bon",
+    "pickMonthHint": "Touchez un mois pour l'encaisser.",
+    "saveAndPrint": "Encaisser",
+    "ERR_studentRequired": "Choisissez un élève.",
+    "ERR_amountInvalid": "Le montant doit être supérieur à 0.",
+    "noFee": "Aucune mensualité définie pour cette classe.",
+    "noChild": "Aucun enfant rattaché à votre compte. Contactez l'administration.",
+    "upToDate": "À jour",
+    "thisMonth": "Ce mois",
+    "paidThisYear": "Payé cette année",
+    "history": "Versements"
   },
   "settings": {
     "profile": "Mon profil",
@@ -478,6 +503,9 @@
     "print": "Imprimer",
     "footer": "Document généré automatiquement — à conserver.",
     "notFound": "Reçu introuvable.",
-    "short": "Reçu"
+    "short": "Reçu",
+    "remainingMonth": "Reste à payer pour ce mois",
+    "remainingTotal": "Reste à payer (total à ce jour)",
+    "monthSettled": "Mois soldé"
   }
 }

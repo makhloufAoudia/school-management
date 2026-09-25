@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Printer } from "lucide-react";
 
@@ -16,4 +17,14 @@ export default function PrintButton() {
       {t("print")}
     </button>
   );
+}
+
+// Lance l'impression automatiquement (lien « Imprimer le bon » après un
+// encaissement : /recu/paiement/<id>?print=1).
+export function AutoPrint() {
+  useEffect(() => {
+    const t = setTimeout(() => window.print(), 400);
+    return () => clearTimeout(t);
+  }, []);
+  return null;
 }
