@@ -49,7 +49,7 @@ export default async function PaymentsPage() {
       supabase.from("monthly_dues").select("student_id, period, amount"),
       isParent
         ? Promise.resolve({ data: [] as ClassOption[] })
-        : supabase.from("classes").select("id, name").order("name"),
+        : supabase.from("classes").select("id, name, monthly_fee").order("name"),
     ]);
 
   const rows = (students ?? []) as unknown as StudentFeeRow[];

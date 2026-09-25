@@ -94,3 +94,44 @@ export async function deleteClass(id: string) {
   revalidatePath("/[locale]/classes", "page");
   return { error: error?.message ?? null };
 }
+
+// Mensualité d'une classe, modifiée depuis la page Paiements.
+// Les mois déjà écoulés gardent l'ancien tarif (monthly_dues).
+export async function saveClassMonthlyFee(id: string, fee: number) {
+  if (!Number.isFinite(fee) || fee < 0) return { error: "ERR_feeInvalid" };
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const { data: prev } = await supabase
+    .from("classes")
+    .select("monthly_fee, academic_years(start_date, end_date)")
+    .eq("id", id)
+    .single();
+
+  const { error } = await supabase
+    .from("classes")
+    .update({ monthly_fee: fee })
+    .eq("id", id);
+
+  if (!error && prev && Number(prev.monthly_fee) !== fee) {
+    const year = prev.academic_years as unknown as {
+      start_date: string;
+      end_date: string;
+    } | null;
+    const today = currentPeriod();
+    const { from } = schoolYearBounds(year?.start_date, year?.end_date, today);
+    await freezeClassPastMonths(id, Number(prev.monthly_fee), from, today);
+    await supabase.from("class_fee_history").insert({
+      class_id: id,
+      old_fee: Number(prev.monthly_fee),
+      new_fee: fee,
+      changed_by: session?.user.id ?? null,
+    });
+  }
+
+  revalidatePath("/[locale]/classes", "page");
+  revalidatePath("/[locale]/payments", "page");
+  return { error: error?.message ?? null };
+}

@@ -12,12 +12,14 @@ import {
   CalendarCheck,
   Printer,
   CheckCircle2,
+  Settings2,
 } from "lucide-react";
 import Modal from "@/components/modal";
 import { FloatInput, FloatSelect, FloatTextarea } from "@/components/ui/fields";
 import { BusyLabel } from "@/components/ui/busy";
 import { confirmDelete } from "@/lib/swal";
 import { savePayment, deletePayment } from "@/lib/actions/payments";
+import { saveClassMonthlyFee } from "@/lib/actions/classes";
 import { formatMoney } from "@/lib/format";
 import type { StudentAccount } from "@/lib/dues";
 import MonthGrid, { useMonthLabel, STATUS_STYLES } from "@/components/payments/month-grid";
@@ -48,7 +50,7 @@ export type StudentFees = {
   account: StudentAccount;
 };
 
-export type ClassOption = { id: string; name: string };
+export type ClassOption = { id: string; name: string; monthly_fee?: number };
 
 const TYPES = ["tuition", "registration", "transport", "canteen", "other"] as const;
 const METHODS = ["cash", "check", "transfer", "card"] as const;
@@ -91,6 +93,7 @@ export default function PaymentsView({
   const [monthFilter, setMonthFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [form, setForm] = useState<FormState>(null);
+  const [showFees, setShowFees] = useState(false);
 
   const q = search.trim().toLowerCase();
 
@@ -148,6 +151,14 @@ export default function PaymentsView({
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{tn("payments")}</h1>
         {canEdit && (
+          <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setShowFees(true)}
+            className="flex items-center gap-2 rounded-md border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-950"
+          >
+            <Settings2 className="h-4 w-4" />
+            {t("classFees")}
+          </button>
           <button
             onClick={() => setForm({ mode: "collect", studentId: "", period: month })}
             className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
@@ -155,6 +166,7 @@ export default function PaymentsView({
             <Plus className="h-4 w-4" />
             {t("collect")}
           </button>
+          </div>
         )}
       </div>
 
@@ -393,6 +405,10 @@ export default function PaymentsView({
             </tbody>
           </table>
         </div>
+      )}
+
+      {showFees && (
+        <ClassFeesForm classes={classOptions} onClose={() => setShowFees(false)} />
       )}
 
       {form && (
@@ -724,6 +740,83 @@ function PaymentForm({
               </BusyLabel>
             </button>
           </div>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------
+//  Mensualités des classes : l'admin fixe ici la somme mensuelle de
+//  chaque classe. Tous les élèves de la classe la doivent chaque mois.
+// ---------------------------------------------------------------------
+function ClassFeesForm({
+  classes,
+  onClose,
+}: {
+  classes: ClassOption[];
+  onClose: () => void;
+}) {
+  const t = useTranslations("payments");
+  const tc = useTranslations("common");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleSubmit(fd: FormData) {
+    setError(null);
+    startTransition(async () => {
+      for (const c of classes) {
+        const value = Number(fd.get(`fee_${c.id}`) ?? 0);
+        if (value !== Number(c.monthly_fee ?? 0)) {
+          const res = await saveClassMonthlyFee(c.id, value);
+          if (res.error) {
+            setError(res.error === "ERR_feeInvalid" ? t("ERR_amountInvalid") : res.error);
+            return;
+          }
+        }
+      }
+      router.refresh();
+      onClose();
+    });
+  }
+
+  return (
+    <Modal title={t("classFees")} onClose={onClose}>
+      <form action={handleSubmit} className="space-y-3">
+        <p className="text-sm text-slate-500">{t("classFeesHint")}</p>
+        <div className="max-h-80 space-y-3 overflow-y-auto pe-1 pt-2">
+          {classes.length === 0 && (
+            <p className="py-4 text-center text-sm text-slate-400">{t("noClass")}</p>
+          )}
+          {classes.map((c) => (
+            <FloatInput
+              key={c.id}
+              label={c.name}
+              type="number"
+              name={`fee_${c.id}`}
+              min={0}
+              step="0.01"
+              defaultValue={Number(c.monthly_fee ?? 0)}
+            />
+          ))}
+        </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
+          >
+            {tc("cancel")}
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <BusyLabel loading={pending}>{tc("save")}</BusyLabel>
+          </button>
         </div>
       </form>
     </Modal>

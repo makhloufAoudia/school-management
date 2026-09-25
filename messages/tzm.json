@@ -331,7 +331,10 @@
     "upToDate": "Yettwaxelleṣ akk",
     "thisMonth": "Ayyur-a",
     "paidThisYear": "Ayen yettwaxelsen aseggas-a",
-    "history": "Ixelliṣen"
+    "history": "Ixelliṣen",
+    "classFees": "Ixelliṣen n wayyur n tneɣrufin",
+    "classFeesHint": "Sbadu azal ara yettwaxelṣen yal ayyur i yal taneɣruft. Akk inelmaden n tneɣruft ad t-xellṣen s wudem awurman. Ayyuren i iεeddan ad qqimen s wazal aqbur.",
+    "noClass": "Ulac taneɣruft. Rnu taneɣruft di « Tineɣrufin » qbel."
   },
   "settings": {
     "profile": "Amaɣnu-inu",

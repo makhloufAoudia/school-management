@@ -331,7 +331,10 @@
     "upToDate": "Up to date",
     "thisMonth": "This month",
     "paidThisYear": "Paid this year",
-    "history": "Payments"
+    "history": "Payments",
+    "classFees": "Class monthly fees",
+    "classFeesHint": "Set the amount due each month for each class. Every student in the class owes it automatically. Past months keep the previous amount.",
+    "noClass": "No class yet. Create one first under “Classes”."
   },
   "settings": {
     "profile": "My profile",

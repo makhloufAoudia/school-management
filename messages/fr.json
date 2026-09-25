@@ -331,7 +331,10 @@
     "upToDate": "À jour",
     "thisMonth": "Ce mois",
     "paidThisYear": "Payé cette année",
-    "history": "Versements"
+    "history": "Versements",
+    "classFees": "Mensualités des classes",
+    "classFeesHint": "Fixez la somme à payer chaque mois pour chaque classe. Tous les élèves de la classe la doivent automatiquement. Les mois déjà passés gardent l'ancien montant.",
+    "noClass": "Aucune classe. Créez d'abord une classe dans « Classes »."
   },
   "settings": {
     "profile": "Mon profil",
