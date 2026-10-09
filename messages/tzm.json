@@ -14,7 +14,8 @@
     "actions": "Tigawin",
     "installApp": "Sbedd asnas",
     "installIosHelp1": "Sit ɣef",
-    "installIosHelp2": "syin « Rnu ɣer ugdil agejdan »."
+    "installIosHelp2": "syin « Rnu ɣer ugdil agejdan ».",
+    "roleSuperAdmin": "Anedbal agejdan"
   },
   "nav": {
     "dashboard": "Tafelwit n usenqed",

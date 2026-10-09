@@ -14,7 +14,8 @@
     "actions": "Actions",
     "installApp": "Install app",
     "installIosHelp1": "Tap",
-    "installIosHelp2": "then “Add to Home Screen”."
+    "installIosHelp2": "then “Add to Home Screen”.",
+    "roleSuperAdmin": "Super admin"
   },
   "nav": {
     "dashboard": "Dashboard",

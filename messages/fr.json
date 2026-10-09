@@ -14,7 +14,8 @@
     "actions": "Actions",
     "installApp": "Installer l'application",
     "installIosHelp1": "Touchez",
-    "installIosHelp2": "puis « Sur l'écran d'accueil »."
+    "installIosHelp2": "puis « Sur l'écran d'accueil ».",
+    "roleSuperAdmin": "Super-administrateur"
   },
   "nav": {
     "dashboard": "Tableau de bord",

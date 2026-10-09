@@ -14,7 +14,8 @@
     "actions": "إجراءات",
     "installApp": "تثبيت التطبيق",
     "installIosHelp1": "اضغط على",
-    "installIosHelp2": "ثم «إضافة إلى الشاشة الرئيسية»."
+    "installIosHelp2": "ثم «إضافة إلى الشاشة الرئيسية».",
+    "roleSuperAdmin": "المشرف العام"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

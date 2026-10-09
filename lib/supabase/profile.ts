@@ -4,6 +4,7 @@ export type SessionProfile = {
   supabase: Awaited<ReturnType<typeof createClient>>;
   userId: string | null;
   fullName: string;
+  email: string;
   role: "admin" | "teacher" | "parent";
   schoolId: string | null;
   isSuperAdmin: boolean;
@@ -22,6 +23,7 @@ export async function getSessionProfile(): Promise<SessionProfile> {
       supabase,
       userId: null,
       fullName: "",
+      email: "",
       role: "parent",
       schoolId: null,
       isSuperAdmin: false,
@@ -38,6 +40,7 @@ export async function getSessionProfile(): Promise<SessionProfile> {
     supabase,
     userId: session.user.id,
     fullName: profile?.full_name || session.user.email || "",
+    email: session.user.email ?? "",
     role: profile?.role ?? "parent",
     schoolId: profile?.school_id ?? null,
     isSuperAdmin: profile?.is_super_admin ?? false,

@@ -45,13 +45,18 @@ export default function Sidebar({
   role,
   userName,
   isSuperAdmin = false,
+  email = "",
+  schoolName = "",
 }: {
   role: Role;
   userName: string;
   isSuperAdmin?: boolean;
+  email?: string;
+  schoolName?: string;
 }) {
   const t = useTranslations("nav");
   const tc = useTranslations("common");
+  const tu = useTranslations("users");
   const pathname = usePathname();
   const router = useRouter();
 
@@ -102,6 +107,40 @@ export default function Sidebar({
       active ? "text-white" : "text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-300"
     }`;
 
+  // Chaque type de compte a sa couleur et son libellé : on sait toujours
+  // avec quel compte on est connecté (barre du haut + bas du menu).
+  const roleKey = isSuperAdmin ? "super" : role;
+  const ROLE_STYLE: Record<string, { label: string; badge: string; avatar: string }> = {
+    super: {
+      label: tc("roleSuperAdmin"),
+      badge: "bg-amber-100 text-amber-800 ring-amber-600/20 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-400/30",
+      avatar: "from-amber-400 to-orange-600",
+    },
+    admin: {
+      label: tu("role_admin"),
+      badge: "bg-indigo-100 text-indigo-800 ring-indigo-600/20 dark:bg-indigo-500/15 dark:text-indigo-200 dark:ring-indigo-400/30",
+      avatar: "from-indigo-500 to-violet-600",
+    },
+    teacher: {
+      label: tu("role_teacher"),
+      badge: "bg-emerald-100 text-emerald-800 ring-emerald-600/20 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-400/30",
+      avatar: "from-emerald-500 to-teal-600",
+    },
+    parent: {
+      label: tu("role_parent"),
+      badge: "bg-sky-100 text-sky-800 ring-sky-600/20 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-400/30",
+      avatar: "from-sky-500 to-blue-600",
+    },
+  };
+  const roleStyle = ROLE_STYLE[roleKey];
+  const roleBadge = (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${roleStyle.badge}`}
+    >
+      {roleStyle.label}
+    </span>
+  );
+
   const initials =
     userName
       .split(/\s+/)
@@ -132,6 +171,7 @@ export default function Sidebar({
           <Menu className="h-5 w-5" />
         </button>
         {brand}
+        <div className="ms-auto">{roleBadge}</div>
       </header>
 
       {/* Voile sombre derrière le tiroir (toujours rendu pour l'animation) */}
@@ -195,23 +235,43 @@ export default function Sidebar({
             <LanguageSwitcher />
             <ThemeToggle />
           </div>
-          <div className="flex items-center gap-2.5 rounded-lg bg-slate-50 p-2 dark:bg-slate-800/60">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-xs font-semibold text-white">
-              {initials}
+          <div className="rounded-lg bg-slate-50 p-2.5 dark:bg-slate-800/60">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-xs font-semibold text-white ${roleStyle.avatar}`}
+              >
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold">{userName}</div>
+                {email && email !== userName && (
+                  <div className="truncate text-xs text-slate-500 dark:text-slate-400" title={email}>
+                    {email}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="min-w-0 flex-1 truncate text-sm font-medium">{userName}</div>
-            <button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              title={t("logout")}
-              aria-label={t("logout")}
-              className="inline-flex shrink-0 items-center gap-1 rounded-md p-2 text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950"
-            >
-              <BusyLabel loading={loggingOut} iconOnly>
-                <LogOut className="h-4 w-4" />
-              </BusyLabel>
-            </button>
+            <div className="mt-2 flex min-w-0 items-center gap-2">
+              {roleBadge}
+              {schoolName && (
+                <span className="flex min-w-0 items-center gap-1 truncate text-xs text-slate-500 dark:text-slate-400" title={schoolName}>
+                  <Building2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{schoolName}</span>
+                </span>
+              )}
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950"
+          >
+            <BusyLabel loading={loggingOut}>
+              <LogOut className="h-4 w-4" />
+              {t("logout")}
+            </BusyLabel>
+          </button>
         </div>
       </aside>
     </>
