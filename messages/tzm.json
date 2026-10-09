@@ -11,7 +11,10 @@
     "search": "Nadi",
     "comingSoon": "Aḥric-a ad yettwaseggem deg usurif i d-iteddun.",
     "close": "Mdel",
-    "actions": "Tigawin"
+    "actions": "Tigawin",
+    "installApp": "Sbedd asnas",
+    "installIosHelp1": "Sit ɣef",
+    "installIosHelp2": "syin « Rnu ɣer ugdil agejdan »."
   },
   "nav": {
     "dashboard": "Tafelwit n usenqed",

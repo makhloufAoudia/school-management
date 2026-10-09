@@ -11,7 +11,10 @@
     "search": "بحث",
     "comingSoon": "سيتم تطوير هذا القسم في الخطوة القادمة.",
     "close": "إغلاق",
-    "actions": "إجراءات"
+    "actions": "إجراءات",
+    "installApp": "تثبيت التطبيق",
+    "installIosHelp1": "اضغط على",
+    "installIosHelp2": "ثم «إضافة إلى الشاشة الرئيسية»."
   },
   "nav": {
     "dashboard": "لوحة التحكم",

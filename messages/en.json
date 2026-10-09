@@ -11,7 +11,10 @@
     "search": "Search",
     "comingSoon": "This section will be built in the next step.",
     "close": "Close",
-    "actions": "Actions"
+    "actions": "Actions",
+    "installApp": "Install app",
+    "installIosHelp1": "Tap",
+    "installIosHelp2": "then “Add to Home Screen”."
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -11,7 +11,10 @@
     "search": "Rechercher",
     "comingSoon": "Cette section sera développée dans la prochaine étape.",
     "close": "Fermer",
-    "actions": "Actions"
+    "actions": "Actions",
+    "installApp": "Installer l'application",
+    "installIosHelp1": "Touchez",
+    "installIosHelp2": "puis « Sur l'écran d'accueil »."
   },
   "nav": {
     "dashboard": "Tableau de bord",
